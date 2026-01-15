@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../src/WheelPicker.Maui/WheelPicker.Maui.csproj" />
+  <Project Path="WheelPicker.Maui.Sample/WheelPicker.Maui.Sample.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
+</Solution>

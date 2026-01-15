@@ -1,0 +1,5 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<ItemGroup>
+		<MauiAsset Include="$(MSBuildThisFileDirectory)raw\wheel_tick.mp3" LogicalName="wheel_tick.mp3" Visible="False" />
+	</ItemGroup>
+</Project>

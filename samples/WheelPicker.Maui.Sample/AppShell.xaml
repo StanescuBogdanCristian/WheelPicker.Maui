@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell x:Class="WheelPicker.Maui.Sample.AppShell"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+       xmlns:views="clr-namespace:WheelPicker.Maui.Sample.Views"
+       FlyoutBehavior="Disabled"
+       Shell.NavBarIsVisible="False"
+       Title="WheelPicker">
+    <Shell.Behaviors>
+        <toolkit:StatusBarBehavior StatusBarColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                   StatusBarStyle="{AppThemeBinding Light=DarkContent, Dark=LightContent}"
+                                   ApplyOn="OnPageNavigatedTo" />
+    </Shell.Behaviors>
+
+    <ShellContent Route="SplashPage"
+                  ContentTemplate="{DataTemplate views:SplashPage}" />
+
+    <TabBar>
+        <Tab Title="Properties">
+            <ShellContent Route="PropertiesPage"
+                          ContentTemplate="{DataTemplate views:PropertiesPage}"
+                          Title="Properties" />
+        </Tab>
+        <Tab Title="Overlays">
+            <ShellContent Route="OverlaysPage"
+                          ContentTemplate="{DataTemplate views:OverlaysPage}"
+                          Title="Overlays" />
+        </Tab>
+        <Tab Title="VisualStates">
+            <ShellContent Route="VisualStatesPage"
+                          ContentTemplate="{DataTemplate views:VisualStatesPage}"
+                          Title="VisualStates" />
+        </Tab>
+        <Tab Title="Samples">
+            <ShellContent Route="SamplesPage"
+                          ContentTemplate="{DataTemplate views:SamplesPage}"
+                          Title="Samples" />
+        </Tab>
+    </TabBar>
+</Shell>

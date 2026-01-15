@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:WheelPicker.Maui.Sample.ViewModels"
+             xmlns:wp="clr-namespace:WheelPicker.Maui;assembly=SBC.WheelPicker.Maui"
+             x:Class="WheelPicker.Maui.Sample.Views.VisualStatesPage"
+             x:Name="root"
+             Title="Visual states">
+    <ContentPage.BindingContext>
+        <models:VisualStatesPageViewModel />
+    </ContentPage.BindingContext>
+
+    <Grid RowDefinitions="auto,*"
+          RowSpacing="10">
+        <ContentView BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                     Padding="10,15"
+                     Grid.ColumnSpan="3">
+            <Label Text="{Binding Source={x:Reference root}, Path=Title}"
+                   FontSize="15"
+                   FontAttributes="Bold"
+                   VerticalTextAlignment="Center" />
+            <ContentView.Shadow>
+                <Shadow Brush="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"
+                        Offset="0,1"
+                        Radius="5"
+                        Opacity="0.2" />
+            </ContentView.Shadow>
+        </ContentView>
+        <VerticalStackLayout MaximumWidthRequest="500"
+                             VerticalOptions="Center"
+                             Padding="10,0"
+                             Grid.Column="0"
+                             Grid.Row="1">
+            <wp:WheelPicker x:Name="WheelPicker"
+                            ItemsSource="{Binding Items}"
+                            SoundFeedback="False"
+                            SelectionThreshold="0.2"
+                            VisibleItemsCount="7"
+                            CurvatureFactor="0">
+                <wp:WheelPicker.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="50,*"
+                              ColumnSpacing="10"
+                              Padding="10">
+                            <Border x:Name="icon"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"
+                                    StrokeThickness="1"
+                                    Padding="5"
+                                    BackgroundColor="Transparent"
+                                    Stroke="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="25" />
+                                </Border.StrokeShape>
+                                <Image Source="logo.png"
+                                       Aspect="AspectFit" />
+                            </Border>
+                            <VerticalStackLayout VerticalOptions="Center"
+                                                 Grid.Column="1">
+                                <Label x:Name="title"
+                                       Text="{Binding Title}"
+                                       FontSize="14" />
+                                <Label x:Name="subtitle"
+                                       Text="{Binding SubTitle}"
+                                       FontSize="12" />
+                            </VerticalStackLayout>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="SelectionStates">
+                                    <VisualState x:Name="DefaultItem" />
+                                    <VisualState x:Name="CurrentItem">
+                                        <VisualState.Setters>
+                                            <Setter TargetName="icon"
+                                                    Property="Border.Stroke"
+                                                    Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                            <Setter TargetName="icon"
+                                                    Property="Border.StrokeThickness"
+                                                    Value="2" />
+                                            <Setter TargetName="title"
+                                                    Property="Label.TextColor"
+                                                    Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                            <Setter TargetName="subtitle"
+                                                    Property="Label.TextColor"
+                                                    Value="{AppThemeBinding Light={StaticResource PrimaryDark}, Dark={StaticResource Primary}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </DataTemplate>
+
+                </wp:WheelPicker.ItemTemplate>
+                <wp:WheelPicker.Overlay>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="{Binding Source={x:Reference WheelPicker}, Path=ItemHeight}" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <BoxView Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                 Opacity="0.5"
+                                 Grid.Row="0" />
+
+                        <Border StrokeThickness="0"
+                                BackgroundColor="#1affffff"
+                                Grid.Row="1">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20" />
+                            </Border.StrokeShape>
+                            <Border.Shadow>
+                                <Shadow Brush="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"
+                                        Offset="0,0"
+                                        Radius="1"
+                                        Opacity="{AppThemeBinding Light=0.8, Dark=0.5}" />
+                            </Border.Shadow>
+                        </Border>
+
+                        <BoxView Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                 Opacity="0.5"
+                                 Grid.Row="2" />
+                    </Grid>
+                </wp:WheelPicker.Overlay>
+            </wp:WheelPicker>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

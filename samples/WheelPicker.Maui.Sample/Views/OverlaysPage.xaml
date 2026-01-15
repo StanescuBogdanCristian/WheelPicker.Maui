@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:WheelPicker.Maui.Sample.ViewModels"
+             xmlns:wp="clr-namespace:WheelPicker.Maui;assembly=SBC.WheelPicker.Maui"
+             x:Class="WheelPicker.Maui.Sample.Views.OverlaysPage"
+             x:Name="root"
+             Title="Overlays inspirations">
+
+    <ContentPage.BindingContext>
+        <models:OverlaysPageViewModel />
+    </ContentPage.BindingContext>
+    <Grid RowDefinitions="auto,*"
+          RowSpacing="10">
+        <ContentView BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                     Padding="10,15">
+            <Label Text="{Binding Source={x:Reference root}, Path=Title}"
+                   FontSize="15"
+                   FontAttributes="Bold"
+                   VerticalTextAlignment="Center" />
+            <ContentView.Shadow>
+                <Shadow Brush="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"
+                        Offset="0,1"
+                        Radius="5"
+                        Opacity="0.2" />
+            </ContentView.Shadow>
+        </ContentView>
+        <ScrollView Grid.Row="1">
+            <Grid ColumnDefinitions="*,*"
+                  RowDefinitions="auto,*,1,auto,*"
+                  ColumnSpacing="10"
+                  RowSpacing="5"
+                  Margin="15,5">
+                <Label Text="iOS"
+                       FontSize="Title"
+                       HorizontalTextAlignment="Center"
+                       Grid.Column="0"
+                       Grid.Row="0" />
+                <wp:WheelPicker x:Name="WheelPickeriOS"
+                                MaximumWidthRequest="200"
+                                ItemsSource="{Binding Months}"
+                                SelectedItem="{Binding SelectedMonth}"
+                                VisibleItemsCount="9"
+                                EdgeItemTiltAngle="90"
+                                EdgeItemScale="0.75"
+                                EdgeItemOpacity="1"
+                                Grid.Column="0"
+                                Grid.Row="1">
+                    <wp:WheelPicker.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding ., StringFormat='{0:MMMM yyyy}'}"
+                                   VerticalTextAlignment="Center"
+                                   HorizontalOptions="Start"
+                                   FontSize="17"
+                                   FontFamily="SanFrancisco"
+                                   Padding="10,2.5" />
+                        </DataTemplate>
+                    </wp:WheelPicker.ItemTemplate>
+                    <wp:WheelPicker.Overlay>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="{Binding Source={x:Reference WheelPickeriOS}, Path=ItemHeight}" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <BoxView Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                     Opacity="0.5"
+                                     Grid.Row="0" />
+
+                            <Border StrokeThickness="0"
+                                    BackgroundColor="#1affffff"
+                                    Grid.Row="1">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="8" />
+                                </Border.StrokeShape>
+                                <Border.Shadow>
+                                    <Shadow Brush="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"
+                                            Offset="0,0"
+                                            Radius="1"
+                                            Opacity="{AppThemeBinding Light=0.8, Dark=0.5}" />
+                                </Border.Shadow>
+                            </Border>
+
+                            <BoxView Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                     Opacity="0.5"
+                                     Grid.Row="2" />
+                        </Grid>
+                    </wp:WheelPicker.Overlay>
+                </wp:WheelPicker>
+
+                <Label Text="Android"
+                       FontSize="Title"
+                       HorizontalTextAlignment="Center"
+                       Grid.Column="1"
+                       Grid.Row="0" />
+                <wp:WheelPicker x:Name="WheelPickerAndroid"
+                                MaximumWidthRequest="200"
+                                ItemsSource="{Binding Years}"
+                                SelectedItem="{Binding SelectedYear}"
+                                SoundFeedback="False"
+                                VisibleItemsCount="3"
+                                CurvatureFactor="0"
+                                Grid.Column="1"
+                                Grid.Row="1">
+                    <wp:WheelPicker.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding .}"
+                                   FontSize="35"
+                                   FontFamily="RobotoRegular"
+                                   VerticalTextAlignment="Center"
+                                   HorizontalOptions="Center"
+                                   Padding="0,10" />
+                        </DataTemplate>
+                    </wp:WheelPicker.ItemTemplate>
+                    <wp:WheelPicker.Overlay>
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="{Binding Source={x:Reference WheelPickerAndroid}, Path=ItemHeight}" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <BoxView Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                     Opacity="0.7"
+                                     Grid.Row="0">
+                                <BoxView.Background>
+                                    <LinearGradientBrush StartPoint="0,0"
+                                                         EndPoint="0,1">
+                                        <GradientStop Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                                      Offset="0.0" />
+                                        <GradientStop Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                                      Offset="0.2" />
+                                        <GradientStop Color="Transparent"
+                                                      Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </BoxView.Background>
+                            </BoxView>
+                            <BoxView Color="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
+                                     HeightRequest="1"
+                                     VerticalOptions="End"
+                                     Margin="30,0"
+                                     Grid.Row="0" />
+                            <BoxView Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                     Opacity="0.7"
+                                     Grid.Row="2">
+                                <BoxView.Background>
+                                    <LinearGradientBrush StartPoint="0,1"
+                                                         EndPoint="0,0">
+                                        <GradientStop Color="Transparent"
+                                                      Offset="1.0" />
+                                        <GradientStop Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                                      Offset="0.2" />
+                                        <GradientStop Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                                      Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </BoxView.Background>
+                            </BoxView>
+                            <BoxView Color="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
+                                     HeightRequest="1"
+                                     VerticalOptions="Start"
+                                     Margin="30,0"
+                                     Grid.Row="2" />
+                        </Grid>
+                    </wp:WheelPicker.Overlay>
+                </wp:WheelPicker>
+
+                <BoxView Opacity=".3"
+                         Grid.Row="2"
+                         Grid.Column="0"
+                         Grid.ColumnSpan="2" />
+
+                <Label Text="OneUI"
+                       FontSize="Title"
+                       HorizontalTextAlignment="Center"
+                       Grid.Row="3"
+                       Grid.Column="0" />
+                <wp:WheelPicker x:Name="WheelPickerOneUI"
+                                MaximumWidthRequest="200"
+                                ItemsSource="{Binding Numbers}"
+                                SelectedItem="{Binding SelectedNumber}"
+                                CurvatureFactor="0"
+                                Grid.Column="0"
+                                Grid.Row="4">
+                    <wp:WheelPicker.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding ., StringFormat='{0:D2}'}"
+                                   FontSize="35"
+                                   FontFamily="RobotoRegular"
+                                   HorizontalOptions="Center"
+                                   VerticalTextAlignment="Center" />
+                        </DataTemplate>
+                    </wp:WheelPicker.ItemTemplate>
+                    <wp:WheelPicker.Overlay>
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="{Binding Source={x:Reference WheelPickerOneUI}, Path=ItemHeight}" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <BoxView Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                     Opacity="0.7"
+                                     Grid.Row="0" />
+
+                            <BoxView Color="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                     Opacity="0.7"
+                                     Grid.Row="2" />
+                        </Grid>
+                    </wp:WheelPicker.Overlay>
+                </wp:WheelPicker>
+
+                <Label Text="Others"
+                       FontSize="Title"
+                       HorizontalTextAlignment="Center"
+                       Grid.Row="3"
+                       Grid.Column="1" />
+                <wp:WheelPicker x:Name="WheelPickerOthers"
+                                MaximumWidthRequest="200"
+                                ItemsSource="{Binding Days}"
+                                SelectedItem="{Binding SelectedDay}"
+                                VisibleItemsCount="9"
+                                Grid.Column="1"
+                                Grid.Row="4">
+                    <wp:WheelPicker.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding ., StringFormat='{0:dddd dd MMM}'}"
+                                   HorizontalOptions="End"
+                                   VerticalTextAlignment="Center"
+                                   Padding="0,2.5,10,2.5"
+                                   MaximumHeightRequest="40" />
+                        </DataTemplate>
+                    </wp:WheelPicker.ItemTemplate>
+                    <wp:WheelPicker.Overlay>
+                        <Border StrokeThickness="0"
+                                HeightRequest="{Binding Source={x:Reference WheelPickerOthers}, Path=ItemHeight}"
+                                Grid.Row="1">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="8" />
+                            </Border.StrokeShape>
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0"
+                                                     EndPoint="0,1">
+                                    <GradientStop Color="{AppThemeBinding Light=#330072DE, Dark=#33FF8C00}"
+                                                  Offset="0.0" />
+                                    <GradientStop Color="{AppThemeBinding Light=#1A0072DE, Dark=#1AFF8C00}"
+                                                  Offset="0.35" />
+                                    <GradientStop Color="{AppThemeBinding Light=#1A0072DE, Dark=#1AFF8C00}"
+                                                  Offset="0.75" />
+                                    <GradientStop Color="{AppThemeBinding Light=#330072DE, Dark=#33FF8C00}"
+                                                  Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                    </wp:WheelPicker.Overlay>
+                </wp:WheelPicker>
+
+            </Grid>
+        </ScrollView>
+    </Grid>
+</ContentPage>
