@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/StanescuBogdanCristian/WheelPicker.Maui/blob/master/src/WheelPicker.Maui/assets/banner.jpg" alt="WheelPicker.Maui banner" />
+  <img src="https://github.com/StanescuBogdanCristian/WheelPicker.Maui/blob/main/src/WheelPicker.Maui/assets/banner.jpg" alt="WheelPicker.Maui banner" />
 </p>
 
 ## Features
