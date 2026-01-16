@@ -25,13 +25,8 @@
 
 ## Installation
 
-### Option A: Local project reference
-1. Add the project to your solution  
-2. Reference it from your MAUI app project
-
-### Option B: via NuGet
 ```bash
-dotnet add package SBC.WheelPicker.Maui
+dotnet add package S8C.WheelPicker.Maui
 ```
 
 ---
@@ -167,13 +162,13 @@ wheelPicker.SpinTo(item);
 | `SelectedIndex` | int | -1 | Index of the currently selected item within `ItemsSource`. This property supports two-way data binding.|
 | `SelectedItem` | object | null | Currently selected item within `ItemsSource`. This property supports two-way data binding.|
 | `IsSelectionAnimated` | bool | true | A value indicating whether selection changes are animated when the selected item changes. |
-| `SelectionThreshold` | double | 0.4 | The relative size of the selection band around the vertical center of the wheel, used when determining which item is considered selected. Valid range: 0.0 – 1.0. Typical useful range: 0.25–0.50. |
+| `SelectionThreshold` | double | 0.4 | The relative size of the selection band around the vertical center of the wheel, used when determining which item is considered selected. Valid range: 0.0 – 1.0. |
 
 ## Feedbacks
 
 | Property | Type | Default | Description |
 |---|---:|---:|---|
-| `HapticFeedback` | bool | true | Haptic feedback (vibration) is triggered when selection changes. |
+| `HapticFeedback` | bool | true | Haptic feedback (vibration) when selection changes. |
 | `SoundFeedback` | bool | true | Play a tick sound when selection changes. |
 
 ## Interactions
@@ -189,7 +184,7 @@ wheelPicker.SpinTo(item);
 |---|---:|---:|---|
 | `VisibleItemsCount` | int | 5 | Number of items visible at once in the wheel (typically an odd number so the center item is the selection). Valid range: odd integers from 3 to 11. |
 | `CurvatureFactor` | double | 1.0 | Intensity of the wheel's curvature / 3D bend effect. Lower values make the wheel flatter higher values increase the perceived curve. Valid range: 0.0 – 1.0. |
-| `EdgeItemTiltAngle` | double | 70 | Maximum tilt (rotation) angle, in degrees, applied to items near the edges of the wheel. Valid range: 0.0 – 90.0 degrees. |
+| `EdgeItemTiltAngle` | double | 70 | Maximum tilt (rotation) angle, in degrees, applied to items near the edges of the wheel. Valid range: 0.0 – 90.0. |
 | `EdgeItemScale` | double | 0.5 | Minimum scale applied to items near the top and bottom edges of the wheel. Valid range: 0.1 – 1.0. |
 | `EdgeItemOpacity` | double | 0.1 | Minimum opacity applied to items near the top and bottom edges of the wheel. Valid range: 0.1 – 1.0. |
 

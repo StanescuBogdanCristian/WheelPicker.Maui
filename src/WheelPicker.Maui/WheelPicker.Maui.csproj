@@ -22,7 +22,7 @@
 		<RootNamespace>WheelPicker.Maui</RootNamespace>
 
 		<!-- NuGet identity -->
-		<PackageId>SBC.WheelPicker.Maui</PackageId>
+		<PackageId>S8C.WheelPicker.Maui</PackageId>
 		<Title>WheelPicker</Title>
 		<Description>Wheel picker control for .NET MAUI (Android, iOS, MacOS, Windows).</Description>
 		<Authors>Bogdan Stănescu</Authors>
