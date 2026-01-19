@@ -1,7 +1,4 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/StanescuBogdanCristian/WheelPicker.Maui/main/src/WheelPicker.Maui/assets/banner.jpg"
-       alt="WheelPicker.Maui banner" />
-</p>
+![WheelPicker.Maui banner](https://raw.githubusercontent.com/StanescuBogdanCristian/WheelPicker.Maui/main/src/WheelPicker.Maui/assets/banner.jpg)
 
 ## Features
 
