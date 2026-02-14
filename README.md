@@ -1,5 +1,11 @@
 ![WheelPicker.Maui banner](https://raw.githubusercontent.com/StanescuBogdanCristian/WheelPicker.Maui/main/src/WheelPicker.Maui/assets/banner.jpg)
 
+## Available on NuGet
+
+[![NuGet](https://img.shields.io/nuget/v/S8C.WheelPicker.Maui.svg?label=NuGet)](https://www.nuget.org/packages/S8C.WheelPicker.Maui)
+
+---
+
 ## Features
 
 - **ItemTemplate**

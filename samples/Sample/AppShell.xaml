@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell x:Class="Sample.AppShell"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+       xmlns:views="clr-namespace:Sample.Views"
+       Shell.NavBarHasShadow="True"
+       Title="WheelPicker">
+    <Shell.Behaviors>
+        <toolkit:StatusBarBehavior StatusBarColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}"
+                                   StatusBarStyle="{AppThemeBinding Light=DarkContent, Dark=LightContent}"
+                                   ApplyOn="OnPageNavigatedTo" />
+    </Shell.Behaviors>
+
+    <TabBar>
+        <Tab Title="Properties">
+            <ShellContent Route="PropertiesPage"
+                          ContentTemplate="{DataTemplate views:PropertiesPage}"
+                          Title="Properties" />
+            <Tab.Icon>
+                <FontImageSource FontFamily="MaterialIcons"
+                                 Glyph="&#xe429;"
+                                 Size="24" />
+            </Tab.Icon>
+        </Tab>
+        <Tab Title="Overlays">
+            <ShellContent Route="OverlaysPage"
+                          ContentTemplate="{DataTemplate views:OverlaysPage}"
+                          Title="Overlays" />
+            <Tab.Icon>
+                <FontImageSource FontFamily="MaterialIcons"
+                                 Glyph="&#xe661;"
+                                 Size="24" />
+            </Tab.Icon>
+        </Tab>
+        <Tab Title="VisualStates">
+            <ShellContent Route="VisualStatesPage"
+                          ContentTemplate="{DataTemplate views:VisualStatesPage}"
+                          Title="VisualStates" />
+            <Tab.Icon>
+                <FontImageSource FontFamily="MaterialIcons"
+                                 Glyph="&#xe3b9;"
+                                 Size="24" />
+            </Tab.Icon>
+        </Tab>
+        <Tab Title="Samples">
+            <ShellContent Route="SamplesPage"
+                          ContentTemplate="{DataTemplate views:SamplesPage}"
+                          Title="Samples" />
+            <Tab.Icon>
+                <FontImageSource FontFamily="MaterialIcons"
+                                 Glyph="&#xe5c3;"
+                                 Size="24" />
+            </Tab.Icon>
+        </Tab>
+    </TabBar>
+</Shell>

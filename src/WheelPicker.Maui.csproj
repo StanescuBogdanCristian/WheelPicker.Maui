@@ -1,0 +1,129 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+	</PropertyGroup>
+
+	<PropertyGroup>
+
+		<!-- Assembly -->
+		<AssemblyTitle>SBC WheelPicker</AssemblyTitle>
+		<AssemblyName>SBC.WheelPicker.Maui</AssemblyName>
+		<RootNamespace>SBC.WheelPicker</RootNamespace>
+
+		<!-- NuGet identity -->
+		<PackageId>S8C.WheelPicker.Maui</PackageId>
+		<Title>WheelPicker</Title>
+		<Description>Wheel picker control for .NET MAUI (Android, iOS, MacOS, Windows).</Description>
+		<Authors>Bogdan Stănescu</Authors>
+		<Company>SBC</Company>
+		<Copyright>Bogdan Stănescu</Copyright>
+
+		<!-- Versioning -->
+		<Version>1.0.3</Version>
+		<PackageTags>maui;wheelpicker;picker;control;ui</PackageTags>
+
+		<!-- Links -->
+		<RepositoryUrl>https://github.com/StanescuBogdanCristian/WheelPicker.Maui</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://github.com/StanescuBogdanCristian/WheelPicker.Maui</PackageProjectUrl>
+
+		<!-- License -->
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+		<!-- README + Icon shown on nuget.org -->
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>icon.png</PackageIcon>
+
+		<!-- Packing -->
+		<IsPackable>true</IsPackable>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+		<!-- CI builds: normalize paths for deterministic/source-linked builds -->
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+
+		<!-- Symbols + SourceLink -->
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <AndroidResource Remove="Control - Copy\**" />
+	  <Compile Remove="Control - Copy\**" />
+	  <EmbeddedResource Remove="Control - Copy\**" />
+	  <MauiCss Remove="Control - Copy\**" />
+	  <MauiXaml Remove="Control - Copy\**" />
+	  <None Remove="Control - Copy\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Control\WheelPicker - Copy.cs" />
+	</ItemGroup>
+
+	<!-- Include README + icon inside the nupkg -->
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+		<None Include="assets\icon.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<MauiAsset Include="Resources\Raw\wheel_tick.wav" LogicalName="wheel_tick.wav" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="S8C.WheelPicker.Maui.targets" Pack="true" PackagePath="buildTransitive\S8C.WheelPicker.Maui.targets" />
+		<None Include="Resources\Raw\wheel_tick.wav" Pack="true" PackagePath="buildTransitive\raw\wheel_tick.wav" />
+	</ItemGroup>
+
+	<!-- ANDROID -->
+	<ItemGroup Condition="$(TargetFramework.Contains('-android')) != true">
+		<Compile Remove="**\*.android.cs" />
+		<None Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+	</ItemGroup>
+
+	<!-- iOS + Mac OS -->
+	<ItemGroup Condition="$(TargetFramework.Contains('-ios')) != true AND $(TargetFramework.Contains('-maccatalyst')) != true">
+		<Compile Remove="**\*.macios.cs" />
+		<None Include="**\*.macios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+	</ItemGroup>
+
+	<!-- WINDOWS -->
+	<ItemGroup Condition="$(TargetFramework.Contains('-windows')) != true">
+		<Compile Remove="**\*.windows.cs" />
+		<None Include="**\*.windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Control - Copy\Platforms\WheelPicker.macios.cs" />
+	  <None Remove="Control - Copy\Platforms\WheelPicker.windows.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\PanContainer.Maui\src\PanContainer.Maui.csproj" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<!-- WarningsAsErrors
+     CS1591: Missing XML comment for publicly visible type or member
+     -->
+		<WarningsAsErrors>nullable,CS1591</WarningsAsErrors>
+	</PropertyGroup>
+
+</Project>

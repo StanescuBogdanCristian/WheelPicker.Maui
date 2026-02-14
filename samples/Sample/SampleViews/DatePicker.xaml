@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<VerticalStackLayout xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                     xmlns:wp="http://schemas.sbc.com/maui/wheelpicker"
+                     x:Class="Sample.SampleViews.DatePicker">
+    <BoxView HeightRequest="1"
+             Opacity=".3" />
+    <Grid ColumnDefinitions="*,2.5*,1.5*"
+          ColumnSpacing="0">
+        <wp:WheelPicker x:Name="dayPicker"
+                        InertiaMinVelocity="{Binding Source={x:Reference dayPicker}, Path=ItemHeight}"
+                        VisibleItemsCount="9"
+                        EdgeItemTiltAngle="90"
+                        EdgeItemScale="0.7"
+                        EdgeItemOpacity=".9"
+                        Grid.Column="0">
+            <wp:WheelPicker.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding .}"
+                           VerticalTextAlignment="Center"
+                           FontSize="25"
+                           FontFamily="SanFrancisco">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="SelectionStates">
+                                <VisualState x:Name="DefaultItem" />
+                                <VisualState x:Name="CurrentItem">
+                                    <VisualState.Setters>
+                                        <Setter Property="TextColor"
+                                                Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Label>
+                </DataTemplate>
+            </wp:WheelPicker.ItemTemplate>
+            <wp:WheelPicker.Overlay>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="{Binding Source={x:Reference dayPicker}, Path=ItemHeight}" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                             Opacity="0.8"
+                             Grid.Row="0" />
+
+                    <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                             Opacity="0.8"
+                             Grid.Row="2" />
+                </Grid>
+            </wp:WheelPicker.Overlay>
+        </wp:WheelPicker>
+
+        <wp:WheelPicker x:Name="monthPicker"
+                        InertiaMinVelocity="{Binding Source={x:Reference monthPicker}, Path=ItemHeight}"
+                        VisibleItemsCount="9"
+                        EdgeItemTiltAngle="90"
+                        EdgeItemScale="0.7"
+                        EdgeItemOpacity=".9"
+                        Grid.Column="1">
+            <wp:WheelPicker.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding .}"
+                           VerticalTextAlignment="Center"
+                           FontSize="25"
+                           FontFamily="SanFrancisco">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="SelectionStates">
+                                <VisualState x:Name="DefaultItem" />
+                                <VisualState x:Name="CurrentItem">
+                                    <VisualState.Setters>
+                                        <Setter Property="TextColor"
+                                                Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Label>
+                </DataTemplate>
+            </wp:WheelPicker.ItemTemplate>
+            <wp:WheelPicker.Overlay>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="{Binding Source={x:Reference monthPicker}, Path=ItemHeight}" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                             Opacity="0.8"
+                             Grid.Row="0" />
+
+                    <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                             Opacity="0.8"
+                             Grid.Row="2" />
+                </Grid>
+            </wp:WheelPicker.Overlay>
+        </wp:WheelPicker>
+
+        <wp:WheelPicker x:Name="yearPicker"
+                        InertiaMinVelocity="{Binding Source={x:Reference yearPicker}, Path=ItemHeight}"
+                        VisibleItemsCount="9"
+                        EdgeItemTiltAngle="90"
+                        EdgeItemScale="0.7"
+                        EdgeItemOpacity=".9"
+                        Grid.Column="2">
+            <wp:WheelPicker.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding .}"
+                           VerticalTextAlignment="Center"
+                           FontSize="25"
+                           FontFamily="SanFrancisco">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="SelectionStates">
+                                <VisualState x:Name="DefaultItem" />
+                                <VisualState x:Name="CurrentItem">
+                                    <VisualState.Setters>
+                                        <Setter Property="TextColor"
+                                                Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Label>
+                </DataTemplate>
+            </wp:WheelPicker.ItemTemplate>
+            <wp:WheelPicker.Overlay>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="{Binding Source={x:Reference yearPicker}, Path=ItemHeight}" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                             Opacity="0.8"
+                             Grid.Row="0" />
+
+                    <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                             Opacity="0.8"
+                             Grid.Row="2" />
+                </Grid>
+            </wp:WheelPicker.Overlay>
+        </wp:WheelPicker>
+    </Grid>
+
+    <Grid ColumnDefinitions="*,auto">
+        <Label x:Name="selectedDateLabel"
+               VerticalTextAlignment="Center" />
+
+        <Button x:Name="todayButton"
+                Text="Today"
+                HorizontalOptions="End"
+                Clicked="OnTodayButtonClicked"
+                IsEnabled="False"
+                Grid.Column="1" />
+    </Grid>
+</VerticalStackLayout>
