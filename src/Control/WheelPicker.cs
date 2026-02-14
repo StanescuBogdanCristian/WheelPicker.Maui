@@ -28,6 +28,28 @@ public partial class WheelPicker : Container, IDisposable
     /// <summary>Visual state name applied to the currently selected (center) item.</summary>
     public const string CurrentItemVisualState = "CurrentItem";
 
+    #region Events
+
+    /// <summary>
+    /// Occurs when <see cref="SelectedIndex"/> changes as a result of user interaction or programmatic update.
+    /// </summary>
+    /// <remarks>
+    /// The event args carry the previous and current index values as <see cref="SelectionChangedEventArgs.PreviousSelection"/>
+    /// and <see cref="SelectionChangedEventArgs.CurrentSelection"/> (boxed <see langword="int"/>).
+    /// </remarks>
+    public event EventHandler<SelectionChangedEventArgs>? SelectedIndexChanged;
+
+    /// <summary>
+    /// Occurs when <see cref="SelectedItem"/> changes as a result of user interaction or programmatic update.
+    /// </summary>
+    /// <remarks>
+    /// The event args carry the previous and current item values as <see cref="SelectionChangedEventArgs.PreviousSelection"/>
+    /// and <see cref="SelectionChangedEventArgs.CurrentSelection"/>.
+    /// </remarks>
+    public event EventHandler<SelectionChangedEventArgs>? SelectedItemChanged;
+
+    #endregion
+
     private const string WheelSnapAnimationName = "WheelSnap";
     private const string WheelSpinToAnimationName = "WheelSpinTo";
 
@@ -78,7 +100,6 @@ public partial class WheelPicker : Container, IDisposable
 
     private static readonly object GhostContext = new GhostContextType();
 
-    private readonly Grid _itemsRoot;
     private readonly VerticalStackLayout _itemsHost;
 
     private INotifyCollectionChanged? _observableSource;
@@ -112,6 +133,9 @@ public partial class WheelPicker : Container, IDisposable
     // Pending overlay to apply once control has a valid size.
     private KeyValuePair<View?, View?>? _pendingOverlay;
 
+    // Centered within whatever bounds the developer gives WheelPicker.
+    private readonly RectangleGeometry _clipGeometry = new();
+
     private FlingDirection _flingDirection;
 
     // Current scroll speed in DIPs/sec — updated from both pan and inertia
@@ -138,42 +162,17 @@ public partial class WheelPicker : Container, IDisposable
     /// <summary>Initializes a new instance of the <see cref="WheelPicker"/> class.</summary>
     public WheelPicker()
     {
-        _itemsHost = new() { Spacing = 0 };
-
-        _itemsRoot = new() { IsClippedToBounds = true };
-        _itemsRoot.Children.Add(_itemsHost);
+        _itemsHost = new() { Spacing = 0, };
 
         base.AllowedDirections = AllowedPanDirections.Vertical;
         base.DeferToChildGestures = false;
         FlingVelocityThreshold = 220;
         InertiaMinVelocity = 30;
         InertiaDeceleration = 1800;
-        IsClippedToBounds = true;
 
-        Children.Add(_itemsRoot);
+        Children.Add(_itemsHost);
+        Clip = _clipGeometry;
     }
-
-    #region Events
-
-    /// <summary>
-    /// Occurs when <see cref="SelectedIndex"/> changes as a result of user interaction or programmatic update.
-    /// </summary>
-    /// <remarks>
-    /// The event args carry the previous and current index values as <see cref="SelectionChangedEventArgs.PreviousSelection"/>
-    /// and <see cref="SelectionChangedEventArgs.CurrentSelection"/> (boxed <see langword="int"/>).
-    /// </remarks>
-    public event EventHandler<SelectionChangedEventArgs>? SelectedIndexChanged;
-
-    /// <summary>
-    /// Occurs when <see cref="SelectedItem"/> changes as a result of user interaction or programmatic update.
-    /// </summary>
-    /// <remarks>
-    /// The event args carry the previous and current item values as <see cref="SelectionChangedEventArgs.PreviousSelection"/>
-    /// and <see cref="SelectionChangedEventArgs.CurrentSelection"/>.
-    /// </remarks>
-    public event EventHandler<SelectionChangedEventArgs>? SelectedItemChanged;
-
-    #endregion
 
     /// <inheritdoc/>
     protected override void OnHandlerChanged()
@@ -209,6 +208,8 @@ public partial class WheelPicker : Container, IDisposable
             _pendingOverlay = null;
         }
 
+        UpdateClipGeometry();
+
         UpdateVisualFromVirtualIndex();
 
         if (wasFirstLayout && _isFirstAppearance)
@@ -228,13 +229,10 @@ public partial class WheelPicker : Container, IDisposable
         base.OnPropertyChanged(propertyName);
         if (propertyName == nameof(IsEnabled))
         {
-            if (!IsEnabled)
-            {
-                CancelAnimations();
+            CancelAnimations();
 
-                IsDragging = false;
-                IsSpinning = false;
-            }
+            IsDragging = false;
+            IsSpinning = false;
         }
     }
 
@@ -243,8 +241,6 @@ public partial class WheelPicker : Container, IDisposable
     {
         if (!HasItems || ItemHeight <= 0)
             return;
-
-        base.OnPanning(e);
 
         switch (e.Status)
         {
@@ -294,6 +290,7 @@ public partial class WheelPicker : Container, IDisposable
                     }
 
                     _flingDirection = e.FlingDirection;
+                    StartInertia(e);
                 }
 
                 break;
@@ -303,8 +300,6 @@ public partial class WheelPicker : Container, IDisposable
     /// <inheritdoc/>
     protected override void OnInertia(InertiaEventArgs e)
     {
-        base.OnInertia(e);
-
         if (!HasItems || ItemHeight <= 0)
             return;
 
@@ -532,17 +527,22 @@ public partial class WheelPicker : Container, IDisposable
         if (ItemHeight <= 0)
             return;
 
-#if WINDOWS
-        // Windows clips based on layout bounds rather than visual/scaled bounds,
-        // so compressed heights cause VIC items to be clipped. Use flat height.
-        _cachedVisibleHeight = ItemHeight * VisibleItemsCount;
-#else
         _cachedVisibleHeight = CalculateVisibleHeight();
-#endif
-        _itemsRoot.HeightRequest = _cachedVisibleHeight;
+        _itemsHost.HeightRequest = _cachedVisibleHeight;
+
+        UpdateClipGeometry();
 
         // recenter wheel
         UpdateVisualFromVirtualIndex();
+    }
+
+    private void UpdateClipGeometry()
+    {
+        if (_cachedVisibleHeight <= 0 || Width <= 0 || Height <= 0)
+            return;
+
+        double clipTop = (Height - _cachedVisibleHeight) / 2.0;
+        _clipGeometry.Rect = new Rect(0, clipTop, Width, _cachedVisibleHeight);
     }
 
     /// <summary>
@@ -851,32 +851,14 @@ public partial class WheelPicker : Container, IDisposable
         catch { }
     }
 
-    /// <summary>
-    /// Toggles slot rendering via Clip. Used for sentinel hiding on Windows
-    /// where sentinels sit at the container boundary and leak through.
-    /// NOT used for ghosts — Clip = Rect.Zero can break StackLayout
-    /// measurement on some platforms; ghosts use Opacity = 0 instead.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void HideOrShowSlot(View child, bool hidden)
-    {
-        if (hidden)
-        {
-            child.Clip ??= new RectangleGeometry { Rect = Rect.Zero };
-        }
-        else
-        {
-            if (child.Clip != null)
-                child.Clip = null;
-        }
-    }
-
     #endregion
 
     #region Items management
 
     private void RebuildItems()
     {
+        ItemHeight = 0;
+
         // Recycle current children into the pool
         for (int i = 0; i < _itemsHost.Children.Count; i++)
         {
@@ -1120,15 +1102,6 @@ public partial class WheelPicker : Container, IDisposable
         double edgeItemTiltAngle = EdgeItemTiltAngle;
         double itemHeight = ItemHeight;
 
-#if WINDOWS
-        // On Windows, HeightRequest = ih × VIC, so sentinels sit exactly
-        // at the clip boundary and leak through. Hide them via Clip at rest
-        // (Clip is safe for sentinels — they're real items, no layout impact),
-        // show during scroll for continuity.
-        bool isScrolling = Math.Abs(fractional) > 0.01;
-        int lastSlot = slotCount - 1;
-#endif
-
         // --- flat mode ---
         if (curvature <= 0.0)
         {
@@ -1138,14 +1111,6 @@ public partial class WheelPicker : Container, IDisposable
                     continue;
 
                 bool isGhost = child.BindingContext == GhostContext;
-
-#if WINDOWS
-                if (!isGhost)
-                {
-                    bool isSentinel = i == 0 || i == lastSlot;
-                    HideOrShowSlot(child, isSentinel && !isScrolling);
-                }
-#endif
 
                 // Ghosts stay at opacity 0 (set during rebind).
                 // Only apply transforms to real items.
@@ -1179,13 +1144,6 @@ public partial class WheelPicker : Container, IDisposable
             // Ghost slots — opacity 0 from rebind, skip math.
             if (child.BindingContext == GhostContext)
                 continue;
-
-#if WINDOWS
-            {
-                bool isSentinel = i == 0 || i == lastSlot;
-                HideOrShowSlot(child, isSentinel && !isScrolling);
-            }
-#endif
 
             double visualOffset = i - visualCenterSlot;
             double norm = Math.Clamp(visualOffset * invHalf, -1.0, 1.0);
@@ -1300,7 +1258,7 @@ public partial class WheelPicker : Container, IDisposable
         double start = _virtualCenterIndex;
         double delta = target - start;
 
-        this.AbortAnimation(WheelSnapAnimationName);
+        CancelAnimations();
 
         if (Math.Abs(delta) < 0.001)
         {
@@ -1673,15 +1631,13 @@ public partial class WheelPicker : Container, IDisposable
 
     private void ApplyOverlayInternal(View? oldOverlay, View? newOverlay)
     {
-        if (_itemsRoot == null) return;
-
-        if (oldOverlay != null && _itemsRoot.Children.Contains(oldOverlay))
-            _itemsRoot.Children.Remove(oldOverlay);
+        if (oldOverlay != null && Children.Contains(oldOverlay))
+            Children.Remove(oldOverlay);
 
         if (newOverlay != null)
         {
             newOverlay.InputTransparent = true;
-            _itemsRoot.Children.Add(newOverlay);
+            Children.Add(newOverlay);
         }
     }
 
@@ -1717,6 +1673,16 @@ public partial class WheelPicker : Container, IDisposable
     {
         RebuildItems();
         UpdateItemsRootHeight();
+    }
+
+    private void OnIsSwipeEnabledInternal(bool enabled)
+    {
+        base.IsPanEnabled = enabled;
+
+        CancelAnimations();
+
+        IsDragging = false;
+        IsSpinning = false;
     }
 
     #endregion
@@ -1781,11 +1747,6 @@ public partial class WheelPicker : Container, IDisposable
     #endregion
 
     #region Internal plumbing
-
-    private void SetPanEnabled(bool enabled)
-    {
-        base.IsPanEnabled = enabled;
-    }
 
     private void CancelAnimations()
     {

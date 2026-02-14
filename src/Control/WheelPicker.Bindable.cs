@@ -462,7 +462,6 @@ public partial class WheelPicker
     private static void OnItemTemplateChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var control = (WheelPicker)bindable;
-        control.ItemHeight = 0;
         control.RebuildItems();
     }
 
@@ -514,17 +513,7 @@ public partial class WheelPicker
     private static void OnIsSwipeEnabledChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var control = (WheelPicker)bindable;
-        bool isEnable = (bool)newValue;
-
-        control.SetPanEnabled(isEnable);
-
-        if (!isEnable)
-        {
-            control.CancelAnimations();
-
-            control.IsDragging = false;
-            control.IsSpinning = false;
-        }
+        control.OnIsSwipeEnabledInternal((bool)newValue);
     }
 
     private static object CoerceVisibleItemsCount(BindableObject bindable, object value)
