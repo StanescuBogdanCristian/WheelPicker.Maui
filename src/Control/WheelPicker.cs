@@ -57,20 +57,14 @@ public partial class WheelPicker : Container, IDisposable
 
     private const uint FrameRateMs = 16; // ~60 FPS
 
-    // ── Velocity-adaptive feedback ──────────────────────────────────
-    //
-    // Thresholds derived from FlingVelocityThreshold (DIPs/sec):
-    //   <= 1× threshold -> full intensity — deliberate scroll, each notch distinct
-    //   1×–4× threshold -> linear ramp 1.0 -> 0.0 — notches blur
-    //   >= 4× threshold -> skip — wheel spinning freely
-    //
-    // With default 220 DIPs/sec:
-    //   full at <= 220 DIPs/sec (≈ 5 items/sec)
-    //   skip at >= 880 DIPs/sec (≈ 20 items/sec)
-    private const double SpinFreeMultiplier = 4.0;
-    private const double SnapSoundVolume = 0.25;
+    // --- Velocity-adaptive feedback ---
+    private const double MaxVelocity = 2000.0;
     private const double TickSoundVolumeMin = 0.05;
     private const double TickSoundVolumeMax = 0.20;
+    private const double MinFeedbackIntervalMs = 60;
+
+    // feedback debounce
+    private long _lastFeedbackTimestamp;
 
     private const double MaxTiltAngle = 90.0;
 
@@ -162,7 +156,7 @@ public partial class WheelPicker : Container, IDisposable
     /// <summary>Initializes a new instance of the <see cref="WheelPicker"/> class.</summary>
     public WheelPicker()
     {
-        _itemsHost = new() { Spacing = 0, };
+        _itemsHost = new() { Spacing = 0 };
 
         base.AllowedDirections = AllowedPanDirections.Vertical;
         base.DeferToChildGestures = false;
@@ -229,7 +223,7 @@ public partial class WheelPicker : Container, IDisposable
         base.OnPropertyChanged(propertyName);
         if (propertyName == nameof(IsEnabled))
         {
-            CancelAnimations();
+            CancelAllAnimations();
 
             IsDragging = false;
             IsSpinning = false;
@@ -252,7 +246,7 @@ public partial class WheelPicker : Container, IDisposable
                 IsDragging = true;
                 IsSpinning = true;
 
-                CancelAnimations();
+                CancelAllAnimations();
                 break;
 
             case PanGestureStatus.Running:
@@ -284,13 +278,15 @@ public partial class WheelPicker : Container, IDisposable
 
                         if (_virtualCenterIndex == 0 || _virtualCenterIndex == last)
                         {
-                            CancelAnimations();
+                            CancelAllAnimations();
                             SnapToCurrentSelection(animated: false);
                         }
                     }
-
-                    _flingDirection = e.FlingDirection;
-                    StartInertia(e);
+                    if (e.Status == PanGestureStatus.Completed)
+                    {
+                        _flingDirection = e.FlingDirection;
+                        StartInertia(e);
+                    }
                 }
 
                 break;
@@ -307,7 +303,7 @@ public partial class WheelPicker : Container, IDisposable
         {
             case InertiaStatus.Started:
                 IsSpinning = true;
-                CancelAnimations();
+                CancelAllAnimations();
                 break;
 
             case InertiaStatus.Running:
@@ -367,6 +363,8 @@ public partial class WheelPicker : Container, IDisposable
 
         bool shouldAnimate = animated && !_isFirstAppearance;
 
+        CancelAllAnimations();
+
         if (!shouldAnimate || Math.Abs(delta) < 0.001)
         {
             _virtualCenterIndex = target;
@@ -378,8 +376,6 @@ public partial class WheelPicker : Container, IDisposable
 
             return;
         }
-
-        CancelAnimations();
 
         IsSpinning = true;
         IsDragging = false;
@@ -401,7 +397,7 @@ public partial class WheelPicker : Container, IDisposable
             easing: Easing.SinOut,
             finished: (v, c) =>
             {
-                if (!HasItems)
+                if (!HasItems || c)
                 {
                     IsSpinning = false;
                     return;
@@ -452,6 +448,26 @@ public partial class WheelPicker : Container, IDisposable
         SpinTo(index, animated);
     }
 
+    /// <summary>
+    /// Cancels any running animations including inertia animation.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Call this method when you need to stop any running animations, for example:
+    /// </para>
+    /// <list type="bullet">
+    ///   <item>When the user taps the screen during scrolling</item>
+    ///   <item>When navigating away from the current view</item>
+    ///   <item>When resetting the content position</item>
+    /// </list>
+    /// </remarks>
+    public void CancelAllAnimations()
+    {
+        try { CancelInertia(); } catch { }
+        try { this.AbortAnimation(WheelSnapAnimationName); } catch { }
+        try { this.AbortAnimation(WheelSpinToAnimationName); } catch { }
+    }
+
     #region IDisposable
 
     /// <summary>Releases resources used by the <see cref="WheelPicker"/>.</summary>
@@ -473,7 +489,7 @@ public partial class WheelPicker : Container, IDisposable
             try { DisposeSoundFeedbackHandling(); } catch { }
             try { DisposeNativeHaptic(); } catch { }
 
-            CancelAnimations();
+            CancelAllAnimations();
         }
 
         _disposed = true;
@@ -608,7 +624,7 @@ public partial class WheelPicker : Container, IDisposable
         // Bottom edge, accounting for scale shrinkage from item center.
         double visualBottom = visualCenter + ih * scale / 2.0;
 
-        // Symmetric top ↔ bottom.
+        // Symmetric top <-> bottom.
         return 2.0 * visualBottom;
     }
 
@@ -1258,7 +1274,7 @@ public partial class WheelPicker : Container, IDisposable
         double start = _virtualCenterIndex;
         double delta = target - start;
 
-        CancelAnimations();
+        CancelAllAnimations();
 
         if (Math.Abs(delta) < 0.001)
         {
@@ -1287,9 +1303,20 @@ public partial class WheelPicker : Container, IDisposable
             easing: easing,
             finished: (v, c) =>
             {
-                _virtualCenterIndex = target;
+                if (!HasItems || c)
+                {
+                    IsSpinning = false;
+                    return;
+                }
+
+                // Re-read count — ItemsSource may have changed during the animation.
+                int logicalIndex = NormalizeIndex((int)Math.Round(target));
+                int safeIndex = Math.Clamp(logicalIndex, 0, ItemsSource!.Count - 1);
+
+                _virtualCenterIndex = GetNearestVirtualIndexFor(safeIndex);
+
                 UpdateVisualFromVirtualIndex();
-                FinalizeSelection(target);
+                FinalizeSelection(_virtualCenterIndex);
 
                 if (!IsDragging)
                     IsSpinning = false;
@@ -1433,7 +1460,7 @@ public partial class WheelPicker : Container, IDisposable
 
         _virtualCenterIndex = candidate;
 
-        CancelAnimations();
+        CancelAllAnimations();
         UpdateVisualFromVirtualIndex();
         UpdateSelectionWhileScrolling();
 
@@ -1562,7 +1589,7 @@ public partial class WheelPicker : Container, IDisposable
     /// <remarks>Navigates to the given logical index, with or without animation.</remarks>
     private void NavigateToIndex(int index)
     {
-        CancelAnimations();
+        CancelAllAnimations();
 
         if (_isFirstAppearance)
         {
@@ -1646,7 +1673,7 @@ public partial class WheelPicker : Container, IDisposable
         if (!HasItems)
             return;
 
-        CancelAnimations();
+        CancelAllAnimations();
 
         int idx = SelectedIndex;
         int count = ItemsSource!.Count;
@@ -1679,7 +1706,7 @@ public partial class WheelPicker : Container, IDisposable
     {
         base.IsPanEnabled = enabled;
 
-        CancelAnimations();
+        CancelAllAnimations();
 
         IsDragging = false;
         IsSpinning = false;
@@ -1704,19 +1731,21 @@ public partial class WheelPicker : Container, IDisposable
         if (_isFirstAppearance)
             return;
 
-        // Derive thresholds from FlingVelocityThreshold (DIPs/sec).
-        double speed = _currentScrollSpeed;
-        double fullAt = FlingVelocityThreshold;
-        double skipAt = FlingVelocityThreshold * SpinFreeMultiplier;
-
-        // Normalized intensity: 1.0 at <= fullAt, ramps to 0.0 at skipAt.
         double intensity = isSnap
             ? 1.0
-            : 1.0 - Math.Clamp((speed - fullAt) / (skipAt - fullAt), 0.0, 1.0);
+            : 1.0 - Math.Clamp(Math.Abs(_currentScrollSpeed) / MaxVelocity, 0, 1);
+        intensity *= intensity; // easing
 
-        // Spinning freely — skip everything.
-        if (!isSnap && intensity <= 0.0)
-            return;
+        var now = Stopwatch.GetTimestamp();
+
+        if (_lastFeedbackTimestamp != 0 && MinFeedbackIntervalMs > 0.0)
+        {
+            double elapsedMs = (now - _lastFeedbackTimestamp) * 1000.0 / Stopwatch.Frequency;
+            if (elapsedMs < MinFeedbackIntervalMs)
+                return;
+        }
+
+        _lastFeedbackTimestamp = now;
 
         if (HapticFeedback)
         {
@@ -1735,24 +1764,13 @@ public partial class WheelPicker : Container, IDisposable
             try
             {
                 double volume = isSnap
-                    ? SnapSoundVolume
-                    : TickSoundVolumeMin + (TickSoundVolumeMax - TickSoundVolumeMin) * intensity;
+                    ? TickSoundVolumeMax
+                    : (TickSoundVolumeMax - TickSoundVolumeMin) * intensity;
 
                 PlaySoundFeedback(volume);
             }
             catch { }
         }
-    }
-
-    #endregion
-
-    #region Internal plumbing
-
-    private void CancelAnimations()
-    {
-        try { CancelInertia(); } catch { }
-        try { this.AbortAnimation(WheelSnapAnimationName); } catch { }
-        try { this.AbortAnimation(WheelSpinToAnimationName); } catch { }
     }
 
     #endregion

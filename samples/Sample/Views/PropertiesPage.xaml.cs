@@ -17,7 +17,7 @@ public partial class PropertiesPage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        wheelPicker.CancelInertia();
+        wheelPicker.CancelAllAnimations();
     }
 
     private void OnVisibleItemsCountSliderValueChanged(object sender, ValueChangedEventArgs e)

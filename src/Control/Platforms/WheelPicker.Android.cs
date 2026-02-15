@@ -132,11 +132,9 @@ public partial class WheelPicker
     {
         if (_useComposition && _vibrator != null)
         {
-            float scale = (float)(0.3 + 0.7 * intensity);
-
 #pragma warning disable CA1416 // Validate platform compatibility
             var effect = VibrationEffect.StartComposition()
-                .AddPrimitive((int)VibrationEffectCompositionPrimitive.Click, scale)
+                .AddPrimitive((int)VibrationEffectCompositionPrimitive.Click, (float)intensity)
                 .Compose();
 
             _vibrator.Vibrate(effect);
@@ -149,9 +147,7 @@ public partial class WheelPicker
         if (Handler?.PlatformView is not AView view)
             return;
 
-        var constant = intensity > 0.5
-            ? FeedbackConstants.LongPress
-            : FeedbackConstants.ClockTick;
+        var constant = GetFeedbackConstants(intensity);
 
         view.PerformHapticFeedback(constant);
     }
@@ -175,9 +171,7 @@ public partial class WheelPicker
         if (Handler?.PlatformView is not AView view)
             return;
 
-        var fallback = OperatingSystem.IsAndroidVersionAtLeast(30)
-            ? FeedbackConstants.Confirm
-            : FeedbackConstants.LongPress;
+        var fallback = GetFeedbackConstants(1.0);
 
         view.PerformHapticFeedback(fallback);
     }
@@ -186,6 +180,15 @@ public partial class WheelPicker
     {
         _vibrator = null;
         _useComposition = false;
+    }
+
+    private FeedbackConstants GetFeedbackConstants(double intensity)
+    {
+        return intensity > 0.8
+            ? OperatingSystem.IsAndroidVersionAtLeast(30)
+                    ? FeedbackConstants.Confirm
+                    : FeedbackConstants.ContextClick
+            : FeedbackConstants.ClockTick;
     }
 
     #endregion

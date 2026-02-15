@@ -1,10 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿using SBC.WheelPicker;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using SelectionChangedEventArgs = SBC.WheelPicker.SelectionChangedEventArgs;
 
 namespace Sample.SampleViews;
 
-public partial class DatePicker : VerticalStackLayout
+public partial class DatePicker : Grid
 {
     private const int MinYear = 1920;
     private const int MaxYear = 2100;
@@ -15,6 +17,7 @@ public partial class DatePicker : VerticalStackLayout
 
     private bool _suppressSync;
     private int _currentDaysInMonth;
+    private bool _pendingDaysRefresh;
 
     private DateTime _selectedDate = DateTime.Today;
 
@@ -34,22 +37,39 @@ public partial class DatePicker : VerticalStackLayout
     public DatePicker()
     {
         InitializeComponent();
-        
+
         PopulateYears();
         PopulateMonths();
         PopulateDays();
 
-        dayPicker.ItemsSource = _days;
-        monthPicker.ItemsSource = _months;
-        yearPicker.ItemsSource = _years;
-
-        SyncPickersToDate(SelectedDate);
         selectedDateLabel.Text = $"{SelectedDate:dd MMMM yyyy}";
 
         dayPicker.SelectedIndexChanged += OnDayChanged;
         monthPicker.SelectedIndexChanged += OnMonthChanged;
         yearPicker.SelectedIndexChanged += OnYearChanged;
+
+        dayPicker.PropertyChanged += OnDayPickerPropertyChanged;
+
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
+
+    private void OnLoaded(object? sender, EventArgs e)
+    {
+        dayPicker.ItemsSource = _days;
+        monthPicker.ItemsSource = _months;
+        yearPicker.ItemsSource = _years;
+
+        SyncPickersToDate(SelectedDate);
+    }
+
+    private void OnUnloaded(object? sender, EventArgs e)
+    {
+        dayPicker.CancelAllAnimations();
+        monthPicker.CancelAllAnimations();
+        yearPicker.CancelAllAnimations();
+    }
+
 
     #region Population
 
@@ -76,9 +96,28 @@ public partial class DatePicker : VerticalStackLayout
             return;
 
         _currentDaysInMonth = daysInMonth;
+        bool dayPickerBusy = dayPicker.IsSpinning || dayPicker.IsDragging;
 
         _suppressSync = true;
 
+        if (dayPickerBusy)
+        {
+            // Don't touch the collection while day wheel is scrolling
+            if (dayPicker.SelectedIndex >= daysInMonth)
+                dayPicker.SelectedIndex = daysInMonth - 1;
+
+            _suppressSync = false;
+            _pendingDaysRefresh = true;
+            return;
+        }
+
+        RebuildDayItems(daysInMonth);
+
+        _suppressSync = false;
+    }
+
+    private void RebuildDayItems(int daysInMonth)
+    {
         if (dayPicker.SelectedIndex >= daysInMonth)
             dayPicker.SelectedIndex = daysInMonth - 1;
 
@@ -98,8 +137,6 @@ public partial class DatePicker : VerticalStackLayout
                 _days.Add(text);
             }
         }
-
-        _suppressSync = false;
     }
 
     #endregion
@@ -115,6 +152,7 @@ public partial class DatePicker : VerticalStackLayout
     private void OnMonthChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_suppressSync) return;
+
         PopulateDays();
         SyncDateFromPickers();
     }
@@ -122,11 +160,26 @@ public partial class DatePicker : VerticalStackLayout
     private void OnYearChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_suppressSync) return;
+
         PopulateDays();
         SyncDateFromPickers();
     }
 
     #endregion
+
+    private void OnDayPickerPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(WheelPicker.IsSpinning)) return;
+        if (dayPicker.IsSpinning || !_pendingDaysRefresh) return;
+
+        _pendingDaysRefresh = false;
+
+        _suppressSync = true;
+        RebuildDayItems(_currentDaysInMonth);
+        _suppressSync = false;
+
+        SyncDateFromPickers();
+    }
 
     #region Sync Logic
 
@@ -159,6 +212,10 @@ public partial class DatePicker : VerticalStackLayout
             yearPicker.SelectedIndex = yearIndex;
 
         monthPicker.SelectedIndex = date.Month - 1;
+
+        // Force days rebuild (pickers are stopped, safe to modify)
+        _currentDaysInMonth = 0;
+        _pendingDaysRefresh = false;
 
         PopulateDays();
 

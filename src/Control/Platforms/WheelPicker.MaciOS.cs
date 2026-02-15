@@ -215,9 +215,7 @@ public partial class WheelPicker
         if (_tickFeedback == null)
             return;
 
-        float scale = (float)(0.3 + 0.7 * intensity);
-
-        _tickFeedback.ImpactOccurred(scale);
+        _tickFeedback.ImpactOccurred((float)intensity);
         _tickFeedback.Prepare();
     }
 

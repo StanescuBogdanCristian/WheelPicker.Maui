@@ -10,9 +10,9 @@ public partial class OverlaysPage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        wheelPickeriOS.CancelInertia();
-        wheelPickerAndroid.CancelInertia();
-        wheelPickerOneUI.CancelInertia();
-        wheelPickerOther.CancelInertia();
+        wheelPickeriOS.CancelAllAnimations();
+        wheelPickerAndroid.CancelAllAnimations();
+        wheelPickerOneUI.CancelAllAnimations();
+        wheelPickerOther.CancelAllAnimations();
     }
 }

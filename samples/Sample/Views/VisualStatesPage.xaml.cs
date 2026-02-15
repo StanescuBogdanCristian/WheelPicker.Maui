@@ -10,6 +10,6 @@ public partial class VisualStatesPage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        wheelPicker.CancelInertia();
+        wheelPicker.CancelAllAnimations();
     }
 }

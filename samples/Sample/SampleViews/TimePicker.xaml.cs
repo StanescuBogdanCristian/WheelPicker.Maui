@@ -3,7 +3,7 @@ using SelectionChangedEventArgs = SBC.WheelPicker.SelectionChangedEventArgs;
 
 namespace Sample.SampleViews;
 
-public partial class TimePicker : VerticalStackLayout
+public partial class TimePicker : Grid
 {
     private TimeSpan _selectedTime = DateTime.Now.TimeOfDay;
 
@@ -34,16 +34,30 @@ public partial class TimePicker : VerticalStackLayout
         PopulateMinutes();
         PopulatePeriods();
 
-        hourPicker.ItemsSource = _hours;
-        minutePicker.ItemsSource = _minutes;
-        periodPicker.ItemsSource = _periods;
-
-        SyncPickersToTime(SelectedTime);
         selectedTimeLabel.Text = $"{SelectedTime:hh\\:mm}";
 
         hourPicker.SelectedIndexChanged += OnSelectionChanged;
         minutePicker.SelectedIndexChanged += OnSelectionChanged;
         periodPicker.SelectedIndexChanged += OnSelectionChanged;
+
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
+    }
+
+    private void OnLoaded(object? sender, EventArgs e)
+    {
+        hourPicker.ItemsSource = _hours;
+        minutePicker.ItemsSource = _minutes;
+        periodPicker.ItemsSource = _periods;
+
+        SyncPickersToTime(SelectedTime);
+    }
+
+    private void OnUnloaded(object? sender, EventArgs e)
+    {
+        hourPicker.CancelAllAnimations();
+        minutePicker.CancelAllAnimations();
+        periodPicker.CancelAllAnimations();
     }
 
     #region Population

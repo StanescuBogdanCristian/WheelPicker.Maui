@@ -52,7 +52,7 @@
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="0,0,8,8" />
                     </Border.StrokeShape>
-                    <VerticalStackLayout Spacing="24">
+                    <VerticalStackLayout Spacing="10">
                         <BoxView HeightRequest="1"
                                  Opacity=".3" />
                         <Grid ColumnDefinitions="*,auto,*,auto,*"
@@ -281,8 +281,12 @@
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="0,0,8,8" />
                     </Border.StrokeShape>
-                    
-                    <views:DatePicker />
+                    <VerticalStackLayout Spacing="10">
+                        <BoxView HeightRequest="1"
+                                 Opacity=".3" />
+                        
+                        <views:DatePicker />
+                    </VerticalStackLayout>
                 </Border>
             </toolkit:Expander>
 
@@ -323,8 +327,12 @@
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="0,0,8,8" />
                     </Border.StrokeShape>
-                    
-                    <views:TimePicker />
+                    <VerticalStackLayout Spacing="10">
+                        <BoxView HeightRequest="1"
+                                 Opacity=".3" />
+                        
+                        <views:TimePicker />
+                    </VerticalStackLayout>
                 </Border>
             </toolkit:Expander>
         </VerticalStackLayout>
