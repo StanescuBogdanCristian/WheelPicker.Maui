@@ -397,7 +397,7 @@ public partial class WheelPicker : Container, IDisposable
             easing: Easing.SinOut,
             finished: (v, c) =>
             {
-                if (!HasItems || c)
+                if (!HasItems)
                 {
                     IsSpinning = false;
                     return;
@@ -405,13 +405,14 @@ public partial class WheelPicker : Container, IDisposable
 
                 // Re-read count — ItemsSource may have changed during the animation.
                 int safeIndex = Math.Clamp(logicalIndex, 0, ItemsSource!.Count - 1);
-
                 _virtualCenterIndex = GetNearestVirtualIndexFor(safeIndex);
-
                 UpdateVisualFromVirtualIndex();
-                SetSelectionSilently(safeIndex, ItemsSource[safeIndex]);
 
-                ApplyFeedbacks(isSnap: true);
+                if (!c)
+                {
+                    SetSelectionSilently(safeIndex, ItemsSource[safeIndex]);
+                    ApplyFeedbacks(isSnap: true);
+                }
 
                 if (!IsDragging)
                     IsSpinning = false;
@@ -584,7 +585,7 @@ public partial class WheelPicker : Container, IDisposable
         // Outermost VIC item distance from center (in slot units).
         double outerOffset = (vic - 1) / 2.0;
         double half = Math.Max(1.0, vic / 2.0);
-        double t = outerOffset / half;   // norm ∈ [0, 1)
+        double t = outerOffset / half;   // norm [0, 1)
 
         if (t < 1e-6)
             return ih * vic;
@@ -1303,7 +1304,7 @@ public partial class WheelPicker : Container, IDisposable
             easing: easing,
             finished: (v, c) =>
             {
-                if (!HasItems || c)
+                if (!HasItems)
                 {
                     IsSpinning = false;
                     return;
@@ -1314,9 +1315,12 @@ public partial class WheelPicker : Container, IDisposable
                 int safeIndex = Math.Clamp(logicalIndex, 0, ItemsSource!.Count - 1);
 
                 _virtualCenterIndex = GetNearestVirtualIndexFor(safeIndex);
-
                 UpdateVisualFromVirtualIndex();
-                FinalizeSelection(_virtualCenterIndex);
+
+                if (!c)
+                {
+                    FinalizeSelection(_virtualCenterIndex);
+                }
 
                 if (!IsDragging)
                     IsSpinning = false;
