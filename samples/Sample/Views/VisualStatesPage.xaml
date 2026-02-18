@@ -14,16 +14,16 @@
                     InertiaMinVelocity="{Binding Source={x:Reference wheelPicker}, Path=ItemHeight}"
                     SoundFeedback="False"
                     SelectionThreshold="0.1"
-                    VisibleItemsCount="9"
+                    VisibleItemsCount="11"
                     CurvatureFactor="0"
-                    FlingVelocityThreshold="300"
-                    MaximumWidthRequest="500"
-                    Margin="10,0">
+                    IsClippedToBounds="True"
+                    Padding="10,0">
         <wp:WheelPicker.ItemTemplate>
             <DataTemplate>
                 <Grid ColumnDefinitions="50,*"
                       ColumnSpacing="10"
-                      Padding="10">
+                      Padding="10"
+                      MaximumWidthRequest="500">
                     <Border x:Name="icon"
                             HorizontalOptions="Center"
                             VerticalOptions="Center"
@@ -72,7 +72,7 @@
 
         </wp:WheelPicker.ItemTemplate>
         <wp:WheelPicker.Overlay>
-            <Grid>
+            <Grid MaximumWidthRequest="500">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="{Binding Source={x:Reference wheelPicker}, Path=ItemHeight}" />

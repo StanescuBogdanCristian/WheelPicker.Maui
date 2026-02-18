@@ -34,7 +34,6 @@
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="0" />
-
                 <Border StrokeThickness="0"
                         BackgroundColor="#1affffff"
                         Grid.Row="1">
@@ -48,7 +47,6 @@
                                 Opacity="{AppThemeBinding Light=0.8, Dark=0.5}" />
                     </Border.Shadow>
                 </Border>
-
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="2" />
@@ -81,7 +79,6 @@
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="0" />
-
                 <Border StrokeThickness="0"
                         BackgroundColor="#1affffff"
                         Grid.Row="1">
@@ -95,7 +92,6 @@
                                 Opacity="{AppThemeBinding Light=0.8, Dark=0.5}" />
                     </Border.Shadow>
                 </Border>
-
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="2" />

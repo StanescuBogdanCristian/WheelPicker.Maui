@@ -87,13 +87,11 @@ public partial class WheelPicker : Container, IDisposable
     /// to the page's ViewModel and display its ToString(). A non-null sentinel
     /// with empty ToString() prevents both inheritance and visible content.
     /// </summary>
-    private sealed class GhostContextType
-    {
-        public override string ToString() => string.Empty;
-    }
+    private sealed class GhostContextType { public override string ToString() => string.Empty; }
 
     private static readonly object GhostContext = new GhostContextType();
 
+    private Grid? _itemsClip;
     private readonly VerticalStackLayout _itemsHost;
 
     private INotifyCollectionChanged? _observableSource;
@@ -151,7 +149,9 @@ public partial class WheelPicker : Container, IDisposable
     private int _lastNotifiedIndex = -1;
     private object? _lastNotifiedItem;
 
-    private bool HasItems => ItemsSource?.Count > 0;
+    private int ItemsCount => ItemsSource?.Count ?? 0;
+
+    private bool HasItems => ItemsCount > 0;
 
     /// <summary>Initializes a new instance of the <see cref="WheelPicker"/> class.</summary>
     public WheelPicker()
@@ -228,6 +228,36 @@ public partial class WheelPicker : Container, IDisposable
             IsDragging = false;
             IsSpinning = false;
         }
+
+        if (propertyName == nameof(IsClippedToBounds))
+        {
+            Clip = IsClippedToBounds ? null : _clipGeometry;
+            Dispatcher.Dispatch(async () =>
+            {
+                while (_cachedVisibleHeight <= 0)
+                {
+                    await Task.Delay(1);
+                }
+
+                if (IsClippedToBounds)
+                {
+                    Children.Remove(_itemsHost);
+                    _itemsClip = new Grid() { Clip = _clipGeometry };
+                    _itemsClip.Children.Add(_itemsHost);
+                    Children.Insert(0, _itemsClip);
+                }
+                else
+                {
+                    if (_itemsClip != null)
+                    {
+                        _itemsClip.Children.Clear();
+                        Children.Remove(_itemsClip);
+                        Children.Insert(0, _itemsHost);
+                        _itemsClip = null;
+                    }
+                }
+            });
+        }
     }
 
     /// <inheritdoc/>
@@ -273,7 +303,7 @@ public partial class WheelPicker : Container, IDisposable
                 {
                     if (!Loop)
                     {
-                        int last = ItemsSource!.Count - 1;
+                        int last = ItemsCount - 1;
                         _virtualCenterIndex = Math.Clamp(_virtualCenterIndex, 0, last);
 
                         if (_virtualCenterIndex == 0 || _virtualCenterIndex == last)
@@ -352,9 +382,9 @@ public partial class WheelPicker : Container, IDisposable
         if (!HasItems)
             return;
 
-        int count = ItemsSource!.Count;
+        var items = ItemsSource!;
 
-        index = Math.Clamp(index, 0, count - 1);
+        index = Math.Clamp(index, 0, ItemsCount - 1);
         int logicalIndex = index;
 
         double start = _virtualCenterIndex;
@@ -369,7 +399,7 @@ public partial class WheelPicker : Container, IDisposable
         {
             _virtualCenterIndex = target;
             UpdateVisualFromVirtualIndex();
-            SetSelectionSilently(logicalIndex, ItemsSource[logicalIndex]);
+            SetSelectionSilently(logicalIndex, items[logicalIndex]);
 
             if (!_isFirstAppearance)
                 ApplyFeedbacks(isSnap: true);
@@ -403,14 +433,16 @@ public partial class WheelPicker : Container, IDisposable
                     return;
                 }
 
+                var items = ItemsSource!;
+
                 // Re-read count — ItemsSource may have changed during the animation.
-                int safeIndex = Math.Clamp(logicalIndex, 0, ItemsSource!.Count - 1);
+                int safeIndex = Math.Clamp(logicalIndex, 0, ItemsCount - 1);
                 _virtualCenterIndex = GetNearestVirtualIndexFor(safeIndex);
                 UpdateVisualFromVirtualIndex();
 
                 if (!c)
                 {
-                    SetSelectionSilently(safeIndex, ItemsSource[safeIndex]);
+                    SetSelectionSilently(safeIndex, items[safeIndex]);
                     ApplyFeedbacks(isSnap: true);
                 }
 
@@ -481,8 +513,11 @@ public partial class WheelPicker : Container, IDisposable
         {
             try
             {
-                _observableSource?.CollectionChanged -= OnCollectionChanged;
-                _observableSource = null;
+                if (_observableSource != null)
+                {
+                    _observableSource.CollectionChanged -= OnCollectionChanged;
+                    _observableSource = null;
+                }
             }
             catch { }
 
@@ -570,17 +605,17 @@ public partial class WheelPicker : Container, IDisposable
     /// </summary>
     private double CalculateVisibleHeight()
     {
-        double ih = ItemHeight;
+        double itemHeight = ItemHeight;
         int vic = VisibleItemsCount;
 
-        if (ih <= 0 || vic <= 0)
+        if (itemHeight <= 0 || vic <= 0)
             return 0;
 
         double curvature = CurvatureFactor;
 
         // Flat mode or single item — no compression.
         if (curvature <= 0.0 || vic <= 1)
-            return ih * vic;
+            return itemHeight * vic;
 
         // Outermost VIC item distance from center (in slot units).
         double outerOffset = (vic - 1) / 2.0;
@@ -588,7 +623,7 @@ public partial class WheelPicker : Container, IDisposable
         double t = outerOffset / half;   // norm [0, 1)
 
         if (t < 1e-6)
-            return ih * vic;
+            return itemHeight * vic;
 
         // ── Replicate render-loop math for the outermost VIC item ──
 
@@ -617,16 +652,21 @@ public partial class WheelPicker : Container, IDisposable
             double edgeFactor = (1.0 - scaleNorm + tiltNorm) * 0.5;
 
             double compression = effectiveCompression * PowerCacheHelper.CompressionPow(edgeFactor);
-            translationY = outerOffset * compression * ih;   // inward shift
+            translationY = outerOffset * compression * itemHeight;   // inward shift
         }
 
         // Visual center of the bottom outermost item, measured from wheel center.
-        double visualCenter = outerOffset * ih - translationY;
+        double visualCenter = outerOffset * itemHeight - translationY;
         // Bottom edge, accounting for scale shrinkage from item center.
-        double visualBottom = visualCenter + ih * scale / 2.0;
+        double visualBottom = visualCenter + itemHeight * scale / 2.0;
 
         // Symmetric top <-> bottom.
-        return 2.0 * visualBottom;
+        double value = 2.0 * visualBottom;
+
+#if WINDOWS
+        value = itemHeight * vic - translationY;
+#endif
+        return value;
     }
 
     #endregion
@@ -708,6 +748,7 @@ public partial class WheelPicker : Container, IDisposable
             return false;
 
         double center = _virtualCenterIndex;
+        double selectionThreshold = SelectionThreshold;
 
         if (Loop)
         {
@@ -717,7 +758,7 @@ public partial class WheelPicker : Container, IDisposable
                 return false;
 
             distanceToCenter = Math.Abs(center - roundedRaw);
-            if (distanceToCenter > SelectionThreshold)
+            if (distanceToCenter > selectionThreshold)
                 return false;
 
             candidateIndex = normalizedIndex;
@@ -725,11 +766,11 @@ public partial class WheelPicker : Container, IDisposable
         }
         else
         {
-            double clamped = Math.Clamp(center, 0, ItemsSource!.Count - 1);
+            double clamped = Math.Clamp(center, 0, ItemsCount - 1);
             int rounded = (int)Math.Round(clamped);
 
             distanceToCenter = Math.Abs(center - rounded);
-            if (distanceToCenter > SelectionThreshold)
+            if (distanceToCenter > selectionThreshold)
                 return false;
 
             candidateIndex = rounded;
@@ -742,10 +783,11 @@ public partial class WheelPicker : Container, IDisposable
         if (value == null || !HasItems)
             return -1;
 
-        int count = ItemsSource!.Count;
+        var items = ItemsSource!;
+        int count = ItemsCount;
         for (int i = 0; i < count; i++)
         {
-            if (Equals(ItemsSource[i], value))
+            if (Equals(items[i], value))
                 return i;
         }
 
@@ -820,13 +862,15 @@ public partial class WheelPicker : Container, IDisposable
         if (!HasItems)
             return;
 
+        var items = ItemsSource!;
+
         int logicalIndex = NormalizeIndex((int)Math.Round(virtualTarget));
-        if (logicalIndex < 0 || logicalIndex >= ItemsSource!.Count)
+        if (logicalIndex < 0 || logicalIndex >= ItemsCount)
             return;
 
         bool changed = logicalIndex != SelectedIndex;
 
-        SetSelectionSilently(logicalIndex, ItemsSource[logicalIndex]);
+        SetSelectionSilently(logicalIndex, items[logicalIndex]);
 
         if (changed)
             ApplyFeedbacks(isSnap: true);
@@ -874,7 +918,7 @@ public partial class WheelPicker : Container, IDisposable
 
     private void RebuildItems()
     {
-        ItemHeight = 0;
+        int vic = VisibleItemsCount;
 
         // Recycle current children into the pool
         for (int i = 0; i < _itemsHost.Children.Count; i++)
@@ -884,7 +928,7 @@ public partial class WheelPicker : Container, IDisposable
                 try { child.SizeChanged -= OnItemSizeChanged; } catch { }
                 child.BindingContext = GhostContext;
 
-                if (_viewPool.Count <= VisibleItemsCount)
+                if (_viewPool.Count <= vic)
                     _viewPool.Enqueue(child);
             }
         }
@@ -894,10 +938,7 @@ public partial class WheelPicker : Container, IDisposable
         _lastBaseCenterRawIndex = int.MinValue;
         _lastItemsCount = -1;
 
-        if (VisibleItemsCount <= 0)
-            return;
-
-        int itemsCount = VisibleItemsCount + 2;
+        int itemsCount = vic + 2;
 
         for (int i = 0; i < itemsCount; i++)
         {
@@ -934,15 +975,15 @@ public partial class WheelPicker : Container, IDisposable
 
     private void OnItemSizeChanged(object? sender, EventArgs e)
     {
-        if (sender is not View v)
+        if (sender is not View view)
             return;
 
-        if (v.Height <= 0)
+        if (view.Height <= 0)
             return;
 
         if (ItemHeight <= 0)
         {
-            ItemHeight = v.Height;
+            ItemHeight = view.Height;
             UpdateItemsRootHeight();
 
             for (int i = 0; i < _itemsHost.Children.Count; i++)
@@ -957,7 +998,7 @@ public partial class WheelPicker : Container, IDisposable
             }
         }
 
-        v.SizeChanged -= OnItemSizeChanged;
+        view.SizeChanged -= OnItemSizeChanged;
     }
 
     private void SyncStateFromPublicProps()
@@ -973,20 +1014,20 @@ public partial class WheelPicker : Container, IDisposable
             return;
         }
 
-        int count = ItemsSource!.Count;
+        var items = ItemsSource!;
         int index = -1;
 
         if (SelectedItem != null)
             index = FindItemIndex(SelectedItem);
 
-        if (index < 0 && SelectedIndex >= 0 && SelectedIndex < count)
+        if (index < 0 && SelectedIndex >= 0 && SelectedIndex < ItemsCount)
             index = SelectedIndex;
 
         if (index < 0)
             index = 0;
 
         _virtualCenterIndex = index;
-        SetSelectionSilently(index, ItemsSource[index]);
+        SetSelectionSilently(index, items[index]);
 
         _lastBaseCenterRawIndex = int.MinValue;
         _lastItemsCount = -1;
@@ -1000,7 +1041,7 @@ public partial class WheelPicker : Container, IDisposable
     {
         if (!HasItems)
             return;
-        if (_itemsHost.Children.Count == 0 || VisibleItemsCount <= 0)
+        if (_itemsHost.Children.Count == 0)
             return;
 
         BatchBegin();
@@ -1009,7 +1050,8 @@ public partial class WheelPicker : Container, IDisposable
         {
             var items = ItemsSource!;
             var children = _itemsHost.Children;
-            int count = items.Count;
+            double itemHeight = ItemHeight;
+            int count = ItemsCount;
             int slotCount = children.Count;
             int centerSlot = slotCount / 2;
 
@@ -1045,9 +1087,8 @@ public partial class WheelPicker : Container, IDisposable
                             child.BindingContext = items[rawIndex];
                     }
 
-                    // Hide ghosts with opacity — Clip = Rect.Zero can break
-                    // StackLayout measurement on some platforms. GhostContext
-                    // prevents BindingContext inheritance so no text leaks.
+                    // Hide ghosts with opacity
+                    // GhostContext prevents BindingContext inheritance so no text leaks.
                     child.SetOpacity(child.BindingContext == GhostContext ? 0 : 1);
                 }
 
@@ -1056,13 +1097,13 @@ public partial class WheelPicker : Container, IDisposable
                 _lastLoopFlag = Loop;
             }
 
-            if (ItemHeight > 0)
+            if (itemHeight > 0)
             {
                 double visibleH = _cachedVisibleHeight > 0
                     ? _cachedVisibleHeight
-                    : ItemHeight * VisibleItemsCount;
-                double baseTranslation = visibleH / 2.0 - (centerSlot + 0.5) * ItemHeight;
-                double dynamicOffset = -scrollOffset * ItemHeight;
+                    : itemHeight * VisibleItemsCount;
+                double baseTranslation = visibleH / 2.0 - (centerSlot + 0.5) * itemHeight;
+                double dynamicOffset = -scrollOffset * itemHeight;
                 _itemsHost.TranslationY = baseTranslation + dynamicOffset;
             }
 
@@ -1095,7 +1136,7 @@ public partial class WheelPicker : Container, IDisposable
         if (TryGetSelectionCandidateIndex(out int candidateIndex, out _))
         {
             int baseCenterRaw = (int)roundedCenter;
-            int count = ItemsSource!.Count;
+            int count = ItemsCount;
 
             for (int i = 0; i < slotCount; i++)
             {
@@ -1119,6 +1160,9 @@ public partial class WheelPicker : Container, IDisposable
         double edgeItemTiltAngle = EdgeItemTiltAngle;
         double itemHeight = ItemHeight;
 
+        bool isScrolling = Math.Abs(fractional) > 0.01;
+        int lastSlot = slotCount - 1;
+
         // --- flat mode ---
         if (curvature <= 0.0)
         {
@@ -1137,6 +1181,8 @@ public partial class WheelPicker : Container, IDisposable
                     child.SetOpacity(1);
                     child.SetRotationX(0);
                     child.SetTranslationY(0);
+                    child.HideOrShow((i == 0 || i == lastSlot) && !isScrolling);
+
                     ApplyVisualState(child, i == centerSlotIdx);
                 }
             }
@@ -1203,6 +1249,7 @@ public partial class WheelPicker : Container, IDisposable
             child.SetOpacity(opacity);
             child.SetRotationX((norm < 0 ? 1.0 : -1.0) * tiltDeg);
             child.SetTranslationY(translationY);
+            child.HideOrShow((i == 0 || i == lastSlot) && !isScrolling);
 
             ApplyVisualState(child, i == centerSlotIdx);
         }
@@ -1230,7 +1277,7 @@ public partial class WheelPicker : Container, IDisposable
         if (!HasItems)
             return _virtualCenterIndex;
 
-        int count = ItemsSource!.Count;
+        int count = ItemsCount;
 
         targetIndex = Math.Clamp(targetIndex, 0, count - 1);
 
@@ -1247,7 +1294,7 @@ public partial class WheelPicker : Container, IDisposable
         if (!HasItems)
             return -1;
 
-        var count = ItemsSource!.Count;
+        var count = ItemsCount;
 
         if (Loop)
         {
@@ -1312,7 +1359,7 @@ public partial class WheelPicker : Container, IDisposable
 
                 // Re-read count — ItemsSource may have changed during the animation.
                 int logicalIndex = NormalizeIndex((int)Math.Round(target));
-                int safeIndex = Math.Clamp(logicalIndex, 0, ItemsSource!.Count - 1);
+                int safeIndex = Math.Clamp(logicalIndex, 0, ItemsCount - 1);
 
                 _virtualCenterIndex = GetNearestVirtualIndexFor(safeIndex);
                 UpdateVisualFromVirtualIndex();
@@ -1335,7 +1382,7 @@ public partial class WheelPicker : Container, IDisposable
             return;
 
         int selectedIndex = SelectedIndex;
-        int count = ItemsSource!.Count;
+        int count = ItemsCount;
         double start = _virtualCenterIndex;
         double target;
 
@@ -1376,7 +1423,7 @@ public partial class WheelPicker : Container, IDisposable
             return;
 
         double start = _virtualCenterIndex;
-        int count = ItemsSource!.Count;
+        int count = ItemsCount;
 
         double target = _flingDirection switch
         {
@@ -1402,7 +1449,7 @@ public partial class WheelPicker : Container, IDisposable
             return;
 
         double start = _virtualCenterIndex;
-        int count = ItemsSource!.Count;
+        int count = ItemsCount;
 
         double nearest = Math.Round(start);
         double distanceToNearest = Math.Abs(start - nearest);
@@ -1460,7 +1507,7 @@ public partial class WheelPicker : Container, IDisposable
         double candidate = _virtualCenterIndex + deltaItems;
 
         if (!Loop)
-            candidate = Math.Clamp(candidate, 0, ItemsSource!.Count - 1);
+            candidate = Math.Clamp(candidate, 0, ItemsCount - 1);
 
         _virtualCenterIndex = candidate;
 
@@ -1524,18 +1571,18 @@ public partial class WheelPicker : Container, IDisposable
         if (!Loop)
         {
             double min = 0;
-            double max = ItemsSource!.Count - 1;
+            double max = ItemsCount - 1;
 
             if (candidate < min)
             {
                 double overshoot = min - candidate;
-                candidate = min - overshoot * 0.35;
+                candidate = min - (overshoot * 0.9);
                 hitEdge = true;
             }
             else if (candidate > max)
             {
                 double overshoot = candidate - max;
-                candidate = max + overshoot * 0.35;
+                candidate = max + (overshoot * 0.9);
                 hitEdge = true;
             }
         }
@@ -1620,13 +1667,13 @@ public partial class WheelPicker : Container, IDisposable
         if (_suppressSelectedIndexCallback || !HasItems || _isLoadingItems)
             return;
 
-        int count = ItemsSource!.Count;
+        var items = ItemsSource!;
         int index = NormalizeIndex(newIndex);
-        if (index < 0 || index >= count)
+        if (index < 0 || index >= ItemsCount)
             return;
 
         _suppressSelectedItemCallback = true;
-        SelectedItem = ItemsSource[index];
+        SelectedItem = items[index];
         _suppressSelectedItemCallback = false;
 
         NavigateToIndex(index);
@@ -1680,7 +1727,8 @@ public partial class WheelPicker : Container, IDisposable
         CancelAllAnimations();
 
         int idx = SelectedIndex;
-        int count = ItemsSource!.Count;
+        var items = ItemsSource!;
+        int count = ItemsCount;
 
         if (idx < 0 || idx >= count)
         {
@@ -1692,7 +1740,7 @@ public partial class WheelPicker : Container, IDisposable
         }
 
         _virtualCenterIndex = idx;
-        SetSelectionSilently(idx, ItemsSource[idx]);
+        SetSelectionSilently(idx, items[idx]);
 
         _lastBaseCenterRawIndex = int.MinValue;
         _lastItemsCount = -1;

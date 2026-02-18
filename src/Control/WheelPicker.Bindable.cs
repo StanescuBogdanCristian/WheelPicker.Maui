@@ -246,7 +246,7 @@ public partial class WheelPicker
     /// the center line are treated as selected).
     /// Larger values widen the band, allowing items farther from the center
     /// to still count as selected.
-    /// <para/>Valid range: 0.15 – 1.0. Typical useful range: 0.25–0.50.<para/>
+    /// <para/>Valid range: 0.1 – 0.9. Typical useful range: 0.25–0.50.<para/>
     /// </remarks>
     /// <value>Default is <c>0.40</c>.</value>
     public double SelectionThreshold
@@ -462,6 +462,7 @@ public partial class WheelPicker
     private static void OnItemTemplateChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var control = (WheelPicker)bindable;
+        control.ItemHeight = 0;
         control.RebuildItems();
     }
 
@@ -495,7 +496,7 @@ public partial class WheelPicker
         if (double.IsNaN(v) || double.IsInfinity(v))
             return SelectionThresholdProperty.DefaultValue;
 
-        return Math.Clamp(v, 0.15d, 1.0d);
+        return Math.Clamp(v, 0.1d, 0.9d);
     }
 
     private static void OnOverlayChanged(BindableObject bindable, object oldValue, object newValue)

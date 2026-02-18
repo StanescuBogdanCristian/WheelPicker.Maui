@@ -6,9 +6,20 @@ namespace Sample.ViewModels
     {
         private static readonly string[] WordBank =
         {
-            "maui", "wheel", "picker", "smooth", "gesture", "haptic", "gradient", "layout",
-            "async", "binding", "template", "scroll", "cache", "vector", "shadow", "native",
-            "control", "animate", "select", "update", "render", "optimize"
+            "lorem", "ipsum", "dolor", "sit", "amet",
+            "consectetur", "adipiscing", "elit", "sed",
+            "eiusmod", "tempor", "incididunt", "labore",
+            "dolore", "magna", "aliqua", "enim",
+            "minim", "veniam", "quis", "nostrud",
+            "exercitation", "ullamco", "laboris", "nisi",
+            "aliquip", "commodo", "consequat",
+            "duis", "aute", "irure", "dolor",
+            "reprehenderit", "voluptate", "velit", "esse",
+            "cillum", "dolore", "fugiat", "nulla",
+            "pariatur", "excepteur", "sint", "occaecat",
+            "cupidatat", "non", "proident", "sunt",
+            "culpa", "qui", "officia", "deserunt", "mollit",
+            "anim", "est", "laborum"
         };
 
         public IList<VisualStateItem> Items { get; } = new List<VisualStateItem>();
@@ -21,13 +32,13 @@ namespace Sample.ViewModels
                 var item = new VisualStateItem
                 {
                     Title = GeneratePhrases(1, 2),
-                    SubTitle = GeneratePhrases(5, 10)
+                    SubTitle = GeneratePhrases(4, 5)
                 };
                 Items.Add(item);
             }
         }
 
-        static string GeneratePhrases(int minWords = 4, int maxWords = 10)
+        static string GeneratePhrases(int minWords = 4, int maxWords = 20)
         {
             if (minWords <= 0 || maxWords < minWords) throw new ArgumentOutOfRangeException();
 

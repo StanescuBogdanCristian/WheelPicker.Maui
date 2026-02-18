@@ -33,13 +33,14 @@ public partial class WheelPicker
 
     private void OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
     {
-        if (ItemsSource == null || ItemsSource.Count == 0)
+        if (!HasItems)
             return;
 
         var point = e.GetCurrentPoint((UIElement)sender);
-        int delta = point.Properties.MouseWheelDelta;
+        var properties = point.Properties;
+        int delta = properties.MouseWheelDelta;
 
-        if (delta == 0)
+        if (properties.IsHorizontalMouseWheel || delta == 0)
             return;
 
         // Convert notch direction to item delta and delegate to shared logic.

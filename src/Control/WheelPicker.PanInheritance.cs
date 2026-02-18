@@ -58,7 +58,9 @@ public partial class WheelPicker
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Browsable(false)]
     [Obsolete("WheelPicker controls this internally.", true)]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
     public override bool IsPanEnabled
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
     {
         get => base.IsPanEnabled;
         set => base.IsPanEnabled = value;

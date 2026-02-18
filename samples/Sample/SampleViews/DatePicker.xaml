@@ -3,7 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
       xmlns:wp="http://schemas.sbc.com/maui/wheelpicker"
       x:Class="Sample.SampleViews.DatePicker"
-      ColumnDefinitions="*,2.5*,1.5*"
+      ColumnDefinitions="auto,*,auto"
       RowDefinitions="auto,auto"
       ColumnSpacing="0"
       RowSpacing="10"
@@ -13,27 +13,17 @@
                     InertiaMinVelocity="{Binding Source={x:Reference dayPicker}, Path=ItemHeight}"
                     VisibleItemsCount="9"
                     EdgeItemTiltAngle="90"
-                    EdgeItemScale="0.7"
-                    EdgeItemOpacity=".9"
+                    EdgeItemScale="0.75"
+                    EdgeItemOpacity="1"
                     Grid.Column="0">
         <wp:WheelPicker.ItemTemplate>
             <DataTemplate>
                 <Label Text="{Binding .}"
                        VerticalTextAlignment="Center"
+                       HorizontalOptions="Center"
                        FontSize="25"
-                       FontFamily="SanFrancisco">
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup x:Name="SelectionStates">
-                            <VisualState x:Name="DefaultItem" />
-                            <VisualState x:Name="CurrentItem">
-                                <VisualState.Setters>
-                                    <Setter Property="TextColor"
-                                            Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </Label>
+                       FontFamily="SanFrancisco"
+                       Padding="10,2.5"/>
             </DataTemplate>
         </wp:WheelPicker.ItemTemplate>
         <wp:WheelPicker.Overlay>
@@ -46,7 +36,19 @@
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="0" />
-
+                <Border StrokeThickness="0"
+                        BackgroundColor="#1affffff"
+                        Grid.Row="1">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8,0,8,0" />
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"
+                                Offset="0,0"
+                                Radius="1"
+                                Opacity="{AppThemeBinding Light=0.8, Dark=0.5}" />
+                    </Border.Shadow>
+                </Border>
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="2" />
@@ -58,27 +60,17 @@
                     InertiaMinVelocity="{Binding Source={x:Reference monthPicker}, Path=ItemHeight}"
                     VisibleItemsCount="9"
                     EdgeItemTiltAngle="90"
-                    EdgeItemScale="0.7"
-                    EdgeItemOpacity=".9"
+                    EdgeItemScale="0.75"
+                    EdgeItemOpacity="1"
                     Grid.Column="1">
         <wp:WheelPicker.ItemTemplate>
             <DataTemplate>
                 <Label Text="{Binding .}"
                        VerticalTextAlignment="Center"
+                       HorizontalOptions="Start"
                        FontSize="25"
-                       FontFamily="SanFrancisco">
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup x:Name="SelectionStates">
-                            <VisualState x:Name="DefaultItem" />
-                            <VisualState x:Name="CurrentItem">
-                                <VisualState.Setters>
-                                    <Setter Property="TextColor"
-                                            Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </Label>
+                       FontFamily="SanFrancisco"
+                       Padding="10,2.5"/>
             </DataTemplate>
         </wp:WheelPicker.ItemTemplate>
         <wp:WheelPicker.Overlay>
@@ -91,7 +83,19 @@
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="0" />
-
+                <Border StrokeThickness="0"
+                        BackgroundColor="#1affffff"
+                        Grid.Row="1">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="0" />
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"
+                                Offset="0,0"
+                                Radius="1"
+                                Opacity="{AppThemeBinding Light=0.8, Dark=0.5}" />
+                    </Border.Shadow>
+                </Border>
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="2" />
@@ -103,27 +107,17 @@
                     InertiaMinVelocity="{Binding Source={x:Reference yearPicker}, Path=ItemHeight}"
                     VisibleItemsCount="9"
                     EdgeItemTiltAngle="90"
-                    EdgeItemScale="0.7"
-                    EdgeItemOpacity=".9"
+                    EdgeItemScale="0.75"
+                    EdgeItemOpacity="1"
                     Grid.Column="2">
         <wp:WheelPicker.ItemTemplate>
             <DataTemplate>
                 <Label Text="{Binding .}"
                        VerticalTextAlignment="Center"
+                       HorizontalOptions="Center"
                        FontSize="25"
-                       FontFamily="SanFrancisco">
-                    <VisualStateManager.VisualStateGroups>
-                        <VisualStateGroup x:Name="SelectionStates">
-                            <VisualState x:Name="DefaultItem" />
-                            <VisualState x:Name="CurrentItem">
-                                <VisualState.Setters>
-                                    <Setter Property="TextColor"
-                                            Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-                                </VisualState.Setters>
-                            </VisualState>
-                        </VisualStateGroup>
-                    </VisualStateManager.VisualStateGroups>
-                </Label>
+                       FontFamily="SanFrancisco"
+                       Padding="10,2.5"/>
             </DataTemplate>
         </wp:WheelPicker.ItemTemplate>
         <wp:WheelPicker.Overlay>
@@ -136,7 +130,19 @@
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="0" />
-
+                <Border StrokeThickness="0"
+                        BackgroundColor="#1affffff"
+                        Grid.Row="1">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="0,8,0,8" />
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"
+                                Offset="0,0"
+                                Radius="1"
+                                Opacity="{AppThemeBinding Light=0.8, Dark=0.5}" />
+                    </Border.Shadow>
+                </Border>
                 <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
                          Opacity="0.8"
                          Grid.Row="2" />

@@ -12,15 +12,16 @@
 
     <ScrollView Padding="10">
         <Grid ColumnDefinitions="*,*"
-              RowDefinitions="auto,250,1,auto,250"
+              RowDefinitions="auto,*,1,auto,*"
               ColumnSpacing="10"
-              RowSpacing="10">
+              RowSpacing="10"
+              VerticalOptions="Start">
             <Label Text="iOS"
                    FontSize="Title"
                    HorizontalTextAlignment="Center"
                    Grid.Column="0"
                    Grid.Row="0" />
-            <wp:WheelPicker x:Name="wheelPickeriOS" 
+            <wp:WheelPicker x:Name="wheelPickeriOS"
                             MaximumWidthRequest="200"
                             ItemsSource="{Binding Months}"
                             SelectedItem="{Binding SelectedMonth}"
@@ -29,6 +30,7 @@
                             EdgeItemTiltAngle="90"
                             EdgeItemScale="0.75"
                             EdgeItemOpacity="1"
+                            VerticalOptions="Start"
                             Grid.Column="0"
                             Grid.Row="1">
                 <wp:WheelPicker.ItemTemplate>
@@ -72,7 +74,6 @@
                     </Grid>
                 </wp:WheelPicker.Overlay>
             </wp:WheelPicker>
-
             <Label Text="Android"
                    FontSize="Title"
                    HorizontalTextAlignment="Center"
@@ -86,6 +87,7 @@
                             SoundFeedback="False"
                             VisibleItemsCount="3"
                             CurvatureFactor="0"
+                            VerticalOptions="Start"
                             Grid.Column="1"
                             Grid.Row="1">
                 <wp:WheelPicker.ItemTemplate>
@@ -166,6 +168,7 @@
                             SelectedItem="{Binding SelectedNumber}"
                             InertiaMinVelocity="{Binding Source={x:Reference wheelPickerOneUI}, Path=ItemHeight}"
                             CurvatureFactor="0"
+                            VerticalOptions="Start"
                             Grid.Column="0"
                             Grid.Row="4">
                 <wp:WheelPicker.ItemTemplate>
@@ -206,7 +209,8 @@
                             ItemsSource="{Binding Days}"
                             SelectedItem="{Binding SelectedDay}"
                             InertiaMinVelocity="{Binding Source={x:Reference wheelPickerOther}, Path=ItemHeight}"
-                            VisibleItemsCount="9"
+                            VisibleItemsCount="11"
+                            VerticalOptions="Start"
                             Grid.Column="1"
                             Grid.Row="4">
                 <wp:WheelPicker.ItemTemplate>

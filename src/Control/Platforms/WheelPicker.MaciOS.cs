@@ -75,7 +75,7 @@ public partial class WheelPicker
         if (gr.State != UIGestureRecognizerState.Changed)
             return;
 
-        if (ItemsSource == null || ItemsSource.Count == 0 || ItemHeight <= 0)
+        if (!HasItems || ItemHeight <= 0)
             return;
 
         var view = gr.View;
