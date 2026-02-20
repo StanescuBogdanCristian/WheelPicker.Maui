@@ -11,16 +11,16 @@ using Container = SBC.PanContainer.PanContainer;
 namespace SBC.WheelPicker;
 
 /// <summary>
-/// Provides a vertically scrollable wheel-style picker control that displays a list of items and allows users to select
-/// one by spinning or dragging the wheel. Supports animated transitions, visual effects, and customizable item
-/// templates.
+/// Represents a user interface control that displays a vertically oriented, scrollable wheel of items, allowing users
+/// to select an item by spinning the wheel. Supports both touch and mouse interactions, and can be customized with item
+/// templates and visual feedback.
 /// </summary>
-/// <remarks>
-/// WheelPicker is designed for scenarios where a compact, touch-friendly selection interface is needed,
-/// such as date or value pickers. It supports looping (circular scrolling), haptic and sound feedback, and visual state
-/// transitions for selected and non-selected items. The control can be customized via properties such as item template,
-/// visible item count, and edge effects.
-/// </remarks>
+/// <remarks>WheelPicker provides a circular, looping selection experience similar to native picker controls on
+/// mobile platforms. The control supports animated transitions, haptic and sound feedback, and visual state management
+/// for selected and non-selected items. Items can be bound via ItemsSource, and selection can be managed
+/// programmatically or by user interaction. The control is designed for flexible customization, including item
+/// appearance, scroll behavior, and feedback options. Thread safety is not guaranteed; all interactions should occur on
+/// the UI thread.</remarks>
 public partial class WheelPicker : Container, IDisposable
 {
     /// <summary>Visual state name applied to non-selected items.</summary>
@@ -517,12 +517,12 @@ public partial class WheelPicker : Container, IDisposable
     }
 
     /// <summary>
-    /// Raises the <see cref="SelectedIndexChanged"/> event and executes the <see cref="SelectedIndexChangedCommand"/>, if available.
+    /// Raises the SelectedIndexChanged event and executes the associated command if it can be executed.
     /// </summary>
-    /// <remarks>
-    /// Override this method in a derived class to provide custom handling for index changed events.
-    /// </remarks>
-    /// <param name="e">The event data for <see cref="IndexChangedEventArgs"/>.</param>
+    /// <remarks>Override this method to customize behavior when the selected index changes. The method
+    /// triggers the SelectedIndexChanged event and, if a command is associated and can be executed, invokes the command
+    /// with the appropriate parameter.</remarks>
+    /// <param name="e">The event data that provides information about the selected index change.</param>
     protected virtual void OnSelectedIndexChanged(IndexChangedEventArgs e)
     {
         SelectedIndexChanged?.Invoke(this, e);
@@ -533,12 +533,14 @@ public partial class WheelPicker : Container, IDisposable
     }
 
     /// <summary>
-    /// Raises the <see cref="SelectedItemChanged"/> event and executes the <see cref="SelectedItemChangedCommand"/>, if available.
+    /// Raises the event that signals a change in the selected item and executes the associated command if it can be
+    /// executed.
     /// </summary>
-    /// <remarks>
-    /// Override this method in a derived class to provide custom handling for item changed events.
-    /// </remarks>
-    /// <param name="e">The event data for <see cref="ItemChangedEventArgs"/>.</param>
+    /// <remarks>Override this method in a derived class to customize behavior when the selected item changes.
+    /// The method raises the SelectedItemChanged event and, if the SelectedItemChangedCommand can be executed with the
+    /// provided parameter, executes the command. This allows for additional handling or command execution in response
+    /// to item selection changes.</remarks>
+    /// <param name="e">The event arguments that provide information about the selected item change.</param>
     protected virtual void OnSelectedItemChanged(ItemChangedEventArgs e)
     {
         SelectedItemChanged?.Invoke(this, e);

@@ -1,5 +1,7 @@
 ![WheelPicker.Maui banner](https://raw.githubusercontent.com/StanescuBogdanCristian/WheelPicker.Maui/main/src/WheelPicker.Maui/assets/banner.jpg)
 
+WheelPicker is a .NET MAUI wheel-style selector built on top of `PanContainer`, providing touch-friendly scrolling, fling/inertia, and visual state support for item templates.
+
 ## Available on NuGet
 
 [![NuGet](https://img.shields.io/nuget/v/S8C.WheelPicker.Maui.svg?label=NuGet)](https://www.nuget.org/packages/S8C.WheelPicker.Maui)
@@ -75,7 +77,7 @@ public const string CurrentItemVisualState = "CurrentItem";
 ### Example
 
 ```xml
-<wp:WheelPicker x:Name="WheelPicker"
+<wp:WheelPicker x:Name="wheelPicker"
                 ItemsSource="{Binding Years}"
                 SelectedItem="{Binding SelectedYear}">
     <wp:WheelPicker.ItemTemplate>
@@ -105,7 +107,7 @@ public const string CurrentItemVisualState = "CurrentItem";
 Use `Overlay` to place a highlight or “selection window” on top of the wheel.
 
 ```xml
-<wp:WheelPicker x:Name="WheelPicker"
+<wp:WheelPicker x:Name="wheelPicker"
                 ItemsSource="{Binding Years}"
                 SelectedItem="{Binding SelectedYear}">
 
@@ -115,7 +117,7 @@ Use `Overlay` to place a highlight or “selection window” on top of the wheel
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
-                <RowDefinition Height="{Binding Source={x:Reference WheelPicker}, Path=ItemHeight}" />
+                <RowDefinition Height="{Binding Source={x:Reference wheelPicker}, Path=ItemHeight}" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -237,4 +239,40 @@ These properties apply to the default item template only (ignored when `ItemTemp
 | `SelectedIndexChangedCommandParameter` | object | Optional parameter for `SelectedIndexChangedCommand`. |
 | `SelectedItemChangedCommand` | ICommand | Invoked when `SelectedItem` changes. |
 | `SelectedItemChangedCommandParameter` | object | Optional parameter for `SelectedItemChangedCommand`. |
+
+## Fling & inertia (PanContainer)
+
+WheelPicker inherits from `PanContainer` and uses its fling + inertia engine to keep the wheel scrolling after a fast swipe.
+
+**Behavior**
+- A fling is detected when release velocity exceeds `FlingVelocityThreshold`.
+- Inertia runs while velocity decays, using `InertiaDeceleration` and stops when it drops below `InertiaMinVelocity`.
+- WheelPicker listens to inertia updates to keep scrolling and then snaps to the nearest item.
+
+**Relevant properties** (inherited from `PanContainer`):
+
+| Property | Default | Description |
+|---|---:|---|
+| `FlingVelocityThreshold` | 800 | Minimum release speed (DIPs/sec) to treat a gesture as a fling. |
+| `InertiaMinVelocity` | 50 | Minimum velocity to keep inertia running (DIPs/sec). |
+| `InertiaDeceleration` | 1500 | Deceleration rate for inertia (DIPs/sec²). |
+
+> WheelPicker overrides `IsPanEnabled` and `AllowedDirections` to keep the control consistent. Other `PanContainer` properties remain available for fine-tuning.
+
+---
+
+## Extensibility (virtual methods)
+
+WheelPicker exposes virtual hooks so derived controls can customize behavior:
+
+| Method | Description |
+|---|---|
+| `OnSelectedIndexChanged(IndexChangedEventArgs e)` | Called when `SelectedIndex` changes (before command execution). |
+| `OnSelectedItemChanged(ItemChangedEventArgs e)` | Called when `SelectedItem` changes (before command execution). |
+| `OnPanning(PanEventArgs e)` | From `PanContainer`: pan gesture lifecycle (Started/Running/Completed/Canceled). |
+| `OnInertia(InertiaEventArgs e)` | From `PanContainer`: inertia lifecycle (Started/Running/Completed/Canceled). |
+
+PanContainer repository: https://github.com/StanescuBogdanCristian/PanContainer.Maui
+
+---
 
