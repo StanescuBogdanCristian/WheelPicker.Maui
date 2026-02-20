@@ -12,11 +12,9 @@
     </ContentPage.BindingContext>
 
     <Grid ColumnDefinitions="auto,1,*"
-          RowDefinitions="auto,*"
           IsClippedToBounds="True"
           RowSpacing="0">
-        <ScrollView Grid.Column="0"
-                    Grid.Row="1">
+        <ScrollView Grid.Column="0">
             <VerticalStackLayout Spacing="0"
                                  Padding="10">
                 <Label Text="Selections"
@@ -349,24 +347,13 @@
         </ScrollView>
         <BoxView Opacity=".3"
                  Grid.Column="1"
-                 Grid.Row="1"
                  Margin="0,10" />
         <wp:WheelPicker x:Name="wheelPicker"
                         ItemsSource="{Binding Years}"
                         SelectedItem="{Binding SelectedYear}"
                         SelectedIndex="{Binding SelectedYearIndex}"
-                        Grid.Column="2"
-                        Grid.Row="1">
-            <wp:WheelPicker.ItemTemplate>
-                <DataTemplate>
-                    <Label Text="{Binding .}"
-                           FontFamily="RobotoRegular"
-                           VerticalTextAlignment="Center"
-                           HorizontalOptions="Center"
-                           MaximumHeightRequest="40"
-                           FontSize="25" />
-                </DataTemplate>
-            </wp:WheelPicker.ItemTemplate>
-        </wp:WheelPicker>
+                        ItemFontSize="25"
+                        ItemFontFamily="RobotoRegular"
+                        Grid.Column="2" />
     </Grid>
 </ContentPage>

@@ -56,20 +56,20 @@ internal static class PowerCacheHelper
     private const double BendTightnessPower = 0.85;
 
     private const int Resolution = 100;
-    private static readonly double[] Power0_9 = new double[Resolution + 1];
-    private static readonly double[] Power1_2 = new double[Resolution + 1];
-    private static readonly double[] Power1_3 = new double[Resolution + 1];
-    private static readonly double[] Power0_85 = new double[Resolution + 1];
+    private static readonly double[] PowerTiltAndScale = new double[Resolution + 1];
+    private static readonly double[] PowerCompression = new double[Resolution + 1];
+    private static readonly double[] PowerOpacity = new double[Resolution + 1];
+    private static readonly double[] PowerBendTightness = new double[Resolution + 1];
 
     static PowerCacheHelper()
     {
         for (int i = 0; i <= Resolution; i++)
         {
             double t = i / (double)Resolution;
-            Power0_9[i] = Math.Pow(t, TiltAndScalePower);
-            Power1_2[i] = Math.Pow(t, CompressionPower);
-            Power1_3[i] = Math.Pow(t, OpacityPower);
-            Power0_85[i] = Math.Pow(t, BendTightnessPower);
+            PowerTiltAndScale[i] = Math.Pow(t, TiltAndScalePower);
+            PowerCompression[i] = Math.Pow(t, CompressionPower);
+            PowerOpacity[i] = Math.Pow(t, OpacityPower);
+            PowerBendTightness[i] = Math.Pow(t, BendTightnessPower);
         }
     }
 
@@ -77,23 +77,23 @@ internal static class PowerCacheHelper
     /// <see cref="TiltAndScalePower"/> = 0.9
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double TiltAndScalePow(double t) => t <= 0 ? 0 : t >= 1 ? 1 : Power0_9[(int)(t * Resolution + 0.5)];
+    public static double TiltAndScalePow(double t) => t <= 0 ? 0 : t >= 1 ? 1 : PowerTiltAndScale[(int)(t * Resolution + 0.5)];
 
     /// <summary>
     /// <see cref="CompressionPower"/> = 1.2
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double CompressionPow(double t) => t <= 0 ? 0 : t >= 1 ? 1 : Power1_2[(int)(t * Resolution + 0.5)];
+    public static double CompressionPow(double t) => t <= 0 ? 0 : t >= 1 ? 1 : PowerCompression[(int)(t * Resolution + 0.5)];
 
     /// <summary>
     /// <see cref="OpacityPower"/> = 1.3
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double OpacityPow(double t) => t <= 0 ? 0 : t >= 1 ? 1 : Power1_3[(int)(t * Resolution + 0.5)];
+    public static double OpacityPow(double t) => t <= 0 ? 0 : t >= 1 ? 1 : PowerOpacity[(int)(t * Resolution + 0.5)];
 
     /// <summary>
     /// <see cref="BendTightnessPower"/> = 0.85
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double BendTightnessPow(double t) => t <= 0 ? 0 : t >= 1 ? 1 : Power0_85[(int)(t * Resolution + 0.5)];
+    public static double BendTightnessPow(double t) => t <= 0 ? 0 : t >= 1 ? 1 : PowerBendTightness[(int)(t * Resolution + 0.5)];
 }

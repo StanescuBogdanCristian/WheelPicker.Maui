@@ -28,21 +28,15 @@
                             InertiaMinVelocity="{Binding Source={x:Reference wheelPickeriOS}, Path=ItemHeight}"
                             VisibleItemsCount="9"
                             EdgeItemTiltAngle="90"
-                            EdgeItemScale="0.75"
+                            EdgeItemScale="0.9"
                             EdgeItemOpacity="1"
-                            VerticalOptions="Start"
+                            ItemHorizontalTextAlignment="Start"
+                            ItemFontSize="17"
+                            ItemFontFamily="SanFrancisco"
+                            ItemStringFormat="MMMM yyyy"
+                            ItemPadding="8,2"
                             Grid.Column="0"
                             Grid.Row="1">
-                <wp:WheelPicker.ItemTemplate>
-                    <DataTemplate>
-                        <Label Text="{Binding ., StringFormat='{0:MMMM yyyy}'}"
-                               VerticalTextAlignment="Center"
-                               HorizontalOptions="Start"
-                               FontSize="17"
-                               FontFamily="SanFrancisco"
-                               Padding="10,2.5" />
-                    </DataTemplate>
-                </wp:WheelPicker.ItemTemplate>
                 <wp:WheelPicker.Overlay>
                     <Grid>
                         <Grid.RowDefinitions>
@@ -87,19 +81,11 @@
                             SoundFeedback="False"
                             VisibleItemsCount="3"
                             CurvatureFactor="0"
-                            VerticalOptions="Start"
+                            ItemFontSize="35"
+                            ItemFontFamily="RobotoRegular"
+                            ItemPadding="0,8"
                             Grid.Column="1"
                             Grid.Row="1">
-                <wp:WheelPicker.ItemTemplate>
-                    <DataTemplate>
-                        <Label Text="{Binding .}"
-                               FontSize="35"
-                               FontFamily="RobotoRegular"
-                               VerticalTextAlignment="Center"
-                               HorizontalOptions="Center"
-                               Padding="0,10" />
-                    </DataTemplate>
-                </wp:WheelPicker.ItemTemplate>
                 <wp:WheelPicker.Overlay>
                     <Grid>
 
@@ -168,18 +154,11 @@
                             SelectedItem="{Binding SelectedNumber}"
                             InertiaMinVelocity="{Binding Source={x:Reference wheelPickerOneUI}, Path=ItemHeight}"
                             CurvatureFactor="0"
-                            VerticalOptions="Start"
+                            ItemFontSize="35"
+                            ItemFontFamily="RobotoRegular"
+                            ItemStringFormat="D2"
                             Grid.Column="0"
                             Grid.Row="4">
-                <wp:WheelPicker.ItemTemplate>
-                    <DataTemplate>
-                        <Label Text="{Binding ., StringFormat='{0:D2}'}"
-                               FontSize="35"
-                               FontFamily="RobotoRegular"
-                               HorizontalOptions="Center"
-                               VerticalTextAlignment="Center" />
-                    </DataTemplate>
-                </wp:WheelPicker.ItemTemplate>
                 <wp:WheelPicker.Overlay>
                     <Grid>
 
@@ -210,18 +189,15 @@
                             SelectedItem="{Binding SelectedDay}"
                             InertiaMinVelocity="{Binding Source={x:Reference wheelPickerOther}, Path=ItemHeight}"
                             VisibleItemsCount="11"
-                            VerticalOptions="Start"
+                            EdgeItemTiltAngle="90"
+                            EdgeItemScale="0.9"
+                            ItemHorizontalTextAlignment="End"
+                            ItemStringFormat="dddd dd MMM"
+                            ItemFontSize="15"
+                            ItemFontFamily="PoppinsRegular"
+                            ItemPadding="10,2.5"
                             Grid.Column="1"
                             Grid.Row="4">
-                <wp:WheelPicker.ItemTemplate>
-                    <DataTemplate>
-                        <Label Text="{Binding ., StringFormat='{0:dddd dd MMM}'}"
-                               HorizontalOptions="End"
-                               VerticalTextAlignment="Center"
-                               Padding="0,2.5,10,2.5"
-                               MaximumHeightRequest="40" />
-                    </DataTemplate>
-                </wp:WheelPicker.ItemTemplate>
                 <wp:WheelPicker.Overlay>
                     <Border StrokeThickness="0"
                             HeightRequest="{Binding Source={x:Reference wheelPickerOther}, Path=ItemHeight}">

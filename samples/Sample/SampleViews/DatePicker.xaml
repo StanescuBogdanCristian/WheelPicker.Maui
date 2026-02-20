@@ -3,7 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
       xmlns:wp="http://schemas.sbc.com/maui/wheelpicker"
       x:Class="Sample.SampleViews.DatePicker"
-      ColumnDefinitions="auto,*,auto"
+      ColumnDefinitions=".4*,*,.6*"
       RowDefinitions="auto,auto"
       ColumnSpacing="0"
       RowSpacing="10"
@@ -13,19 +13,13 @@
                     InertiaMinVelocity="{Binding Source={x:Reference dayPicker}, Path=ItemHeight}"
                     VisibleItemsCount="9"
                     EdgeItemTiltAngle="90"
-                    EdgeItemScale="0.75"
+                    EdgeItemScale="0.9"
                     EdgeItemOpacity="1"
-                    Grid.Column="0">
-        <wp:WheelPicker.ItemTemplate>
-            <DataTemplate>
-                <Label Text="{Binding .}"
-                       VerticalTextAlignment="Center"
-                       HorizontalOptions="Center"
-                       FontSize="25"
-                       FontFamily="SanFrancisco"
-                       Padding="10,2.5"/>
-            </DataTemplate>
-        </wp:WheelPicker.ItemTemplate>
+                    ItemFontSize="25"
+                    ItemFontFamily="SanFrancisco"
+                    ItemPadding="10,2.5"
+                    Grid.Column="0"
+                    Grid.Row="0">
         <wp:WheelPicker.Overlay>
             <Grid>
                 <Grid.RowDefinitions>
@@ -60,19 +54,14 @@
                     InertiaMinVelocity="{Binding Source={x:Reference monthPicker}, Path=ItemHeight}"
                     VisibleItemsCount="9"
                     EdgeItemTiltAngle="90"
-                    EdgeItemScale="0.75"
+                    EdgeItemScale="0.9"
                     EdgeItemOpacity="1"
-                    Grid.Column="1">
-        <wp:WheelPicker.ItemTemplate>
-            <DataTemplate>
-                <Label Text="{Binding .}"
-                       VerticalTextAlignment="Center"
-                       HorizontalOptions="Start"
-                       FontSize="25"
-                       FontFamily="SanFrancisco"
-                       Padding="10,2.5"/>
-            </DataTemplate>
-        </wp:WheelPicker.ItemTemplate>
+                    ItemFontSize="25"
+                    ItemFontFamily="SanFrancisco"
+                    ItemPadding="10,2.5"
+                    ItemHorizontalTextAlignment="Start"
+                    Grid.Column="1"
+                    Grid.Row="0">
         <wp:WheelPicker.Overlay>
             <Grid>
                 <Grid.RowDefinitions>
@@ -107,19 +96,13 @@
                     InertiaMinVelocity="{Binding Source={x:Reference yearPicker}, Path=ItemHeight}"
                     VisibleItemsCount="9"
                     EdgeItemTiltAngle="90"
-                    EdgeItemScale="0.75"
+                    EdgeItemScale="0.9"
                     EdgeItemOpacity="1"
-                    Grid.Column="2">
-        <wp:WheelPicker.ItemTemplate>
-            <DataTemplate>
-                <Label Text="{Binding .}"
-                       VerticalTextAlignment="Center"
-                       HorizontalOptions="Center"
-                       FontSize="25"
-                       FontFamily="SanFrancisco"
-                       Padding="10,2.5"/>
-            </DataTemplate>
-        </wp:WheelPicker.ItemTemplate>
+                    ItemFontSize="25"
+                    ItemFontFamily="SanFrancisco"
+                    ItemPadding="10,2.5"
+                    Grid.Column="2"
+                    Grid.Row="0">
         <wp:WheelPicker.Overlay>
             <Grid>
                 <Grid.RowDefinitions>

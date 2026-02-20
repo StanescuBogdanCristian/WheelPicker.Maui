@@ -38,6 +38,10 @@ public partial class DatePicker : Grid
     {
         InitializeComponent();
 
+        dayPicker.ItemsSource = _days;
+        monthPicker.ItemsSource = _months;
+        yearPicker.ItemsSource = _years;
+
         PopulateYears();
         PopulateMonths();
         PopulateDays();
@@ -50,26 +54,15 @@ public partial class DatePicker : Grid
 
         dayPicker.PropertyChanged += OnDayPickerPropertyChanged;
 
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
-    }
-
-    private void OnLoaded(object? sender, EventArgs e)
-    {
-        dayPicker.ItemsSource = _days;
-        monthPicker.ItemsSource = _months;
-        yearPicker.ItemsSource = _years;
-
         SyncPickersToDate(SelectedDate);
     }
 
-    private void OnUnloaded(object? sender, EventArgs e)
+    public void CancelAllAnimations()
     {
         dayPicker.CancelAllAnimations();
         monthPicker.CancelAllAnimations();
         yearPicker.CancelAllAnimations();
     }
-
 
     #region Population
 

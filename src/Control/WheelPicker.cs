@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.Shapes;
 using SBC.PanContainer;
+using SBC.WheelPicker.Converters;
 using SBC.WheelPicker.Helpers;
 using System.Collections;
 using System.Collections.Specialized;
@@ -91,7 +92,6 @@ public partial class WheelPicker : Container, IDisposable
 
     private static readonly object GhostContext = new GhostContextType();
 
-    private Grid? _itemsClip;
     private readonly VerticalStackLayout _itemsHost;
 
     private INotifyCollectionChanged? _observableSource;
@@ -149,9 +149,42 @@ public partial class WheelPicker : Container, IDisposable
     private int _lastNotifiedIndex = -1;
     private object? _lastNotifiedItem;
 
+    #region Helpers
+
     private int ItemsCount => ItemsSource?.Count ?? 0;
 
     private bool HasItems => ItemsCount > 0;
+
+    #endregion
+
+    private static readonly IMultiValueConverter ItemStringFormatConverter = new ItemStringFormatMultiConverter();
+
+    private static readonly RelativeBindingSource WheelPickerAncestor =
+        new(RelativeBindingSourceMode.FindAncestor, typeof(WheelPicker), 1);
+
+    private static readonly DataTemplate DefaultItemTemplate = new(() =>
+    {
+        var label = new Label();
+
+        // Bind text using (item, ItemStringFormat) so format updates live without a rebuild.
+        var mb = new MultiBinding { Converter = ItemStringFormatConverter };
+        mb.Bindings.Add(new Binding("."));
+        mb.Bindings.Add(new Binding(nameof(ItemStringFormat), source: WheelPickerAncestor));
+        label.SetBinding(Label.TextProperty, mb);
+
+        label.SetBinding(Label.TextColorProperty, new Binding(nameof(ItemTextColor), source: WheelPickerAncestor));
+        label.SetBinding(Label.FontSizeProperty, new Binding(nameof(ItemFontSize), source: WheelPickerAncestor));
+        label.SetBinding(Label.FontAttributesProperty, new Binding(nameof(ItemFontAttributes), source: WheelPickerAncestor));
+        label.SetBinding(Label.FontFamilyProperty, new Binding(nameof(ItemFontFamily), source: WheelPickerAncestor));
+        label.SetBinding(Label.PaddingProperty, new Binding(nameof(ItemPadding), source: WheelPickerAncestor));
+        label.SetBinding(Label.HorizontalTextAlignmentProperty, new Binding(nameof(ItemHorizontalTextAlignment), source: WheelPickerAncestor));
+        label.SetBinding(Label.VerticalTextAlignmentProperty, new Binding(nameof(ItemVerticalTextAlignment), source: WheelPickerAncestor));
+        label.SetBinding(Label.LineBreakModeProperty, new Binding(nameof(ItemLineBreakMode), source: WheelPickerAncestor));
+        label.SetBinding(Label.MaxLinesProperty, new Binding(nameof(ItemMaxLines), source: WheelPickerAncestor));
+        label.SetBinding(Label.FontAutoScalingEnabledProperty, new Binding(nameof(ItemFontAutoScalingEnabled), source: WheelPickerAncestor));
+
+        return label;
+    });
 
     /// <summary>Initializes a new instance of the <see cref="WheelPicker"/> class.</summary>
     public WheelPicker()
@@ -182,6 +215,16 @@ public partial class WheelPicker : Container, IDisposable
         else
         {
             Dispose();
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override void OnParentSet()
+    {
+        base.OnParentSet();
+        if (Parent != null && !IsSet(ItemTextColorProperty))
+        {
+            this.SetAppThemeColor(ItemTextColorProperty, Colors.Black, Colors.White);
         }
     }
 
@@ -230,34 +273,7 @@ public partial class WheelPicker : Container, IDisposable
         }
 
         if (propertyName == nameof(IsClippedToBounds))
-        {
             Clip = IsClippedToBounds ? null : _clipGeometry;
-            Dispatcher.Dispatch(async () =>
-            {
-                while (_cachedVisibleHeight <= 0)
-                {
-                    await Task.Delay(1);
-                }
-
-                if (IsClippedToBounds)
-                {
-                    Children.Remove(_itemsHost);
-                    _itemsClip = new Grid() { Clip = _clipGeometry };
-                    _itemsClip.Children.Add(_itemsHost);
-                    Children.Insert(0, _itemsClip);
-                }
-                else
-                {
-                    if (_itemsClip != null)
-                    {
-                        _itemsClip.Children.Clear();
-                        Children.Remove(_itemsClip);
-                        Children.Insert(0, _itemsHost);
-                        _itemsClip = null;
-                    }
-                }
-            });
-        }
     }
 
     /// <inheritdoc/>
@@ -574,7 +590,7 @@ public partial class WheelPicker : Container, IDisposable
 
     #region Layout & clipping
 
-    private void UpdateItemsRootHeight()
+    private void UpdateItemsRootHeight(bool needRecenter = true)
     {
         if (ItemHeight <= 0)
             return;
@@ -584,8 +600,8 @@ public partial class WheelPicker : Container, IDisposable
 
         UpdateClipGeometry();
 
-        // recenter wheel
-        UpdateVisualFromVirtualIndex();
+        if (needRecenter)
+            UpdateVisualFromVirtualIndex();
     }
 
     private void UpdateClipGeometry()
@@ -602,6 +618,8 @@ public partial class WheelPicker : Container, IDisposable
     /// accounting for curvature compression and edge scaling.
     /// Uses the same math as the render loop so the clip boundary
     /// sits precisely at the visual edge of the outermost visible item.
+    /// <para><c>Windows has a different calculation, thats why we need to use <see cref="ViewHelper.HideOrShow"/></c>
+    /// </para>
     /// </summary>
     private double CalculateVisibleHeight()
     {
@@ -907,7 +925,7 @@ public partial class WheelPicker : Container, IDisposable
             view.SetOpacity(1);
             view.SetRotationX(0);
             view.SetTranslationY(0);
-            view.Clip = null;
+            view.HideOrShow(false);
         }
         catch { }
     }
@@ -918,27 +936,39 @@ public partial class WheelPicker : Container, IDisposable
 
     private void RebuildItems()
     {
+        var slots = _itemsHost.Children;
+        int slotCount = slots.Count;
+
+        if (_isLoadingItems && slotCount > 0)
+        {
+            if (_hasValidSize)
+                UpdateVisualFromVirtualIndex();
+            return;
+        }
+
         int vic = VisibleItemsCount;
+        int itemsCount = vic + 2;
+        int centerIndex = itemsCount / 2;
 
         // Recycle current children into the pool
-        for (int i = 0; i < _itemsHost.Children.Count; i++)
+        for (int i = 0; i < slotCount; i++)
         {
-            if (_itemsHost.Children[i] is View child)
+            if (slots[i] is View child)
             {
                 try { child.SizeChanged -= OnItemSizeChanged; } catch { }
                 child.BindingContext = GhostContext;
 
-                if (_viewPool.Count <= vic)
+                if (_viewPool.Count <= itemsCount)
                     _viewPool.Enqueue(child);
             }
         }
 
-        _itemsHost.Children.Clear();
+        slots.Clear();
 
         _lastBaseCenterRawIndex = int.MinValue;
         _lastItemsCount = -1;
 
-        int itemsCount = vic + 2;
+        var template = ItemTemplate ?? DefaultItemTemplate;
 
         for (int i = 0; i < itemsCount; i++)
         {
@@ -946,13 +976,19 @@ public partial class WheelPicker : Container, IDisposable
 
             if (_viewPool.Count > 0)
                 view = _viewPool.Dequeue();
-            else if (ItemTemplate != null)
-                view = ItemTemplate.CreateContent() as View;
+            else
+                view = template.CreateContent() as View;
 
             if (view == null)
                 continue;
 
-            // Single reset per view — not at enqueue AND dequeue.
+            // Prevent BindingContext inheritance from the parent chain.
+            // Recycled views already have GhostContext, but freshly created
+            // views have null -> MAUI inherits from Page -> ViewModel.ToString()
+            // can produce long text that wraps multi-line with Padding, inflating Height.
+            view.BindingContext = GhostContext;
+
+            // Single reset per view
             ResetViewTransforms(view);
 
             if (ItemHeight > 0)
@@ -961,15 +997,56 @@ public partial class WheelPicker : Container, IDisposable
             }
             else
             {
-                view.SizeChanged += OnItemSizeChanged;
+                // if HeightRequest is set, use this, otherwise calculate on SizeChanged
+                if (view.HeightRequest > 0)
+                {
+                    ItemHeight = view.HeightRequest;
+                    UpdateItemsRootHeight(!_hasValidSize);
+                }
+                else
+                {
+                    if (i == centerIndex)
+                    {
+                        try { view.SizeChanged -= OnItemSizeChanged; } catch { }
+                        view.SizeChanged += OnItemSizeChanged;
+                    }
+                }
             }
 
-            _itemsHost.Children.Add(view);
+            slots.Add(view);
         }
 
         if (_hasValidSize)
-        {
             UpdateVisualFromVirtualIndex();
+    }
+
+    /// <summary>
+    /// Clears realized item height requests and re-attaches a single SizeChanged probe
+    /// so ItemHeight can be re-derived from the current template.
+    /// </summary>
+    private void RemeasureItemHeight()
+    {
+        var slots = _itemsHost.Children;
+        int slotCount = slots.Count;
+        if (slotCount == 0)
+            return;
+
+        int centerIndex = slotCount / 2;
+
+        for (int i = 0; i < slotCount; i++)
+        {
+            if (slots[i] is not View view)
+                continue;
+
+            try { view.SizeChanged -= OnItemSizeChanged; } catch { }
+
+            // Let the template determine height.
+            view.ClearValue(HeightRequestProperty);
+
+            if (i == centerIndex)
+            {
+                view.SizeChanged += OnItemSizeChanged;
+            }
         }
     }
 
@@ -978,24 +1055,22 @@ public partial class WheelPicker : Container, IDisposable
         if (sender is not View view)
             return;
 
-        if (view.Height <= 0)
+        if (view.Height <= 0 || !_hasValidSize)
             return;
 
         if (ItemHeight <= 0)
         {
+            var childs = _itemsHost.Children;
             ItemHeight = view.Height;
-            UpdateItemsRootHeight();
+            UpdateItemsRootHeight(false);
 
-            for (int i = 0; i < _itemsHost.Children.Count; i++)
+            for (int i = 0; i < childs.Count; i++)
             {
-                if (_itemsHost.Children[i] is View child)
+                if (childs[i] is View child)
                     child.HeightRequest = ItemHeight;
             }
 
-            if (_hasValidSize)
-            {
-                UpdateVisualFromVirtualIndex();
-            }
+            UpdateVisualFromVirtualIndex();
         }
 
         view.SizeChanged -= OnItemSizeChanged;
@@ -1160,7 +1235,7 @@ public partial class WheelPicker : Container, IDisposable
         double edgeItemTiltAngle = EdgeItemTiltAngle;
         double itemHeight = ItemHeight;
 
-        bool isScrolling = Math.Abs(fractional) > 0.01;
+        bool isScrolling = Math.Abs(fractional) > 0.1;
         int lastSlot = slotCount - 1;
 
         // --- flat mode ---
@@ -1576,13 +1651,13 @@ public partial class WheelPicker : Container, IDisposable
             if (candidate < min)
             {
                 double overshoot = min - candidate;
-                candidate = min - (overshoot * 0.9);
+                candidate = min - (overshoot * 0.5);
                 hitEdge = true;
             }
             else if (candidate > max)
             {
                 double overshoot = candidate - max;
-                candidate = max + (overshoot * 0.9);
+                candidate = max + (overshoot * 0.5);
                 hitEdge = true;
             }
         }
@@ -1600,8 +1675,10 @@ public partial class WheelPicker : Container, IDisposable
 
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        _isLoadingItems = true;
         SyncStateFromPublicProps();
         RebuildItems();
+        _isLoadingItems = false;
     }
 
     private void OnItemsSourceChangedInternal(IList? newSource)
@@ -1618,17 +1695,19 @@ public partial class WheelPicker : Container, IDisposable
             _observableSource.CollectionChanged += OnCollectionChanged;
         }
 
+        // Structural rebuild: the items changed, so pooled views are no longer valid.
+        CancelAllAnimations();
+
         IsDragging = false;
         IsSpinning = false;
 
+        ItemHeight = 0;
+        _viewPool.Clear();
+        _itemsHost.Children.Clear();
+
         _isLoadingItems = true;
-
-        _lastBaseCenterRawIndex = int.MinValue;
-        _lastItemsCount = -1;
-
         SyncStateFromPublicProps();
         RebuildItems();
-
         _isLoadingItems = false;
     }
 
@@ -1660,6 +1739,41 @@ public partial class WheelPicker : Container, IDisposable
             UpdateVisualFromVirtualIndex();
             ApplyFeedbacks(isSnap: true);
         }
+    }
+
+    private void OnItemTemplateChangedInternal()
+    {
+        // Structural rebuild: the template changed, so pooled views are no longer valid.
+        CancelAllAnimations();
+
+        IsDragging = false;
+        IsSpinning = false;
+
+        ItemHeight = 0;
+        _viewPool.Clear();
+        _itemsHost.Children.Clear();
+
+        SyncStateFromPublicProps();
+        RebuildItems();
+    }
+
+    /// <summary>
+    /// Metrics-only update for the realized items (font size, max lines, line-break, etc.).
+    /// Does NOT clear the pool or recreate views; it just forces a re-measure of the item height.
+    /// </summary>
+    private void OnItemMetricsChangedInternal()
+    {
+        // Metrics properties apply to the default template only, custom templates manage their own sizing.
+        if (ItemTemplate != null)
+            return;
+
+        ItemHeight = 0;
+
+        RemeasureItemHeight();
+
+        //// Keep the existing virtual index and visuals; layout will snap back once ItemHeight is known.
+        //if (_hasValidSize)
+        //    UpdateVisualFromVirtualIndex();
     }
 
     private void OnSelectedIndexChangedInternal(int newIndex)
@@ -1698,13 +1812,9 @@ public partial class WheelPicker : Container, IDisposable
     private void OnOverlayChangedInternal(View? oldOverlay, View? newOverlay)
     {
         if (_hasValidSize)
-        {
             ApplyOverlayInternal(oldOverlay, newOverlay);
-        }
         else
-        {
             _pendingOverlay = new(oldOverlay, newOverlay);
-        }
     }
 
     private void ApplyOverlayInternal(View? oldOverlay, View? newOverlay)

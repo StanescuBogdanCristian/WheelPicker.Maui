@@ -30,6 +30,10 @@ public partial class TimePicker : Grid
     {
         InitializeComponent();
 
+        hourPicker.ItemsSource = _hours;
+        minutePicker.ItemsSource = _minutes;
+        periodPicker.ItemsSource = _periods;
+
         PopulateHours();
         PopulateMinutes();
         PopulatePeriods();
@@ -40,20 +44,10 @@ public partial class TimePicker : Grid
         minutePicker.SelectedIndexChanged += OnSelectionChanged;
         periodPicker.SelectedIndexChanged += OnSelectionChanged;
 
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
-    }
-
-    private void OnLoaded(object? sender, EventArgs e)
-    {
-        hourPicker.ItemsSource = _hours;
-        minutePicker.ItemsSource = _minutes;
-        periodPicker.ItemsSource = _periods;
-
         SyncPickersToTime(SelectedTime);
     }
 
-    private void OnUnloaded(object? sender, EventArgs e)
+    public void CancelAllAnimations()
     {
         hourPicker.CancelAllAnimations();
         minutePicker.CancelAllAnimations();

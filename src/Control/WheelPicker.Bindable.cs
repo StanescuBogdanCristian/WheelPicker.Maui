@@ -1,3 +1,4 @@
+using SBC.WheelPicker.Helpers;
 using System.Collections;
 using System.Windows.Input;
 
@@ -20,6 +21,88 @@ public partial class WheelPicker
            declaringType: typeof(WheelPicker),
            defaultValue: default(DataTemplate),
            propertyChanged: OnItemTemplateChanged);
+
+    public static readonly BindableProperty ItemStringFormatProperty = BindableProperty.Create(
+           propertyName: nameof(ItemStringFormat),
+           returnType: typeof(string),
+           declaringType: typeof(WheelPicker),
+           defaultValue: default(string),
+           coerceValue: CoerceItemStringFormat);
+
+    /// <summary>Identifies the <see cref="ItemTextColor"/> bindable property.</summary>
+    public static readonly BindableProperty ItemTextColorProperty = BindableProperty.Create(
+           propertyName: nameof(ItemTextColor),
+           returnType: typeof(Color),
+           declaringType: typeof(WheelPicker));
+
+    /// <summary>Identifies the <see cref="ItemFontSize"/> bindable property.</summary>
+    public static readonly BindableProperty ItemFontSizeProperty = BindableProperty.Create(
+           propertyName: nameof(ItemFontSize),
+           returnType: typeof(double),
+           declaringType: typeof(WheelPicker),
+           defaultValue: 14d,
+           propertyChanged: OnItemMetricsChanged);
+
+    /// <summary>Identifies the <see cref="ItemFontAttributes"/> bindable property.</summary>
+    public static readonly BindableProperty ItemFontAttributesProperty = BindableProperty.Create(
+           propertyName: nameof(ItemFontAttributes),
+           returnType: typeof(FontAttributes),
+           declaringType: typeof(WheelPicker),
+           defaultValue: FontAttributes.None,
+           propertyChanged: OnItemMetricsChanged);
+
+    /// <summary>Identifies the <see cref="ItemFontFamily"/> bindable property.</summary>
+    public static readonly BindableProperty ItemFontFamilyProperty = BindableProperty.Create(
+           propertyName: nameof(ItemFontFamily),
+           returnType: typeof(string),
+           declaringType: typeof(WheelPicker),
+           defaultValue: default(string));
+
+    /// <summary>Identifies the <see cref="ItemPadding"/> bindable property.</summary>
+    public static readonly BindableProperty ItemPaddingProperty = BindableProperty.Create(
+           propertyName: nameof(ItemPadding),
+           returnType: typeof(Thickness),
+           declaringType: typeof(WheelPicker),
+           defaultValue: new Thickness(0),
+           propertyChanged: OnItemMetricsChanged);
+
+    /// <summary>Identifies the <see cref="ItemHorizontalTextAlignment"/> bindable property.</summary>
+    public static readonly BindableProperty ItemHorizontalTextAlignmentProperty = BindableProperty.Create(
+           propertyName: nameof(ItemHorizontalTextAlignment),
+           returnType: typeof(TextAlignment),
+           declaringType: typeof(WheelPicker),
+           defaultValue: TextAlignment.Center);
+
+    /// <summary>Identifies the <see cref="ItemVerticalTextAlignment"/> bindable property.</summary>
+    public static readonly BindableProperty ItemVerticalTextAlignmentProperty = BindableProperty.Create(
+           propertyName: nameof(ItemVerticalTextAlignment),
+           returnType: typeof(TextAlignment),
+           declaringType: typeof(WheelPicker),
+           defaultValue: TextAlignment.Center);
+
+    /// <summary>Identifies the <see cref="ItemLineBreakMode"/> bindable property.</summary>
+    public static readonly BindableProperty ItemLineBreakModeProperty = BindableProperty.Create(
+           propertyName: nameof(ItemLineBreakMode),
+           returnType: typeof(LineBreakMode),
+           declaringType: typeof(WheelPicker),
+           defaultValue: LineBreakMode.NoWrap,
+           propertyChanged: OnItemMetricsChanged);
+
+    /// <summary>Identifies the <see cref="ItemMaxLines"/> bindable property.</summary>
+    public static readonly BindableProperty ItemMaxLinesProperty = BindableProperty.Create(
+           propertyName: nameof(ItemMaxLines),
+           returnType: typeof(int),
+           declaringType: typeof(WheelPicker),
+           defaultValue: 1,
+           propertyChanged: OnItemMetricsChanged);
+
+    /// <summary>Identifies the <see cref="ItemFontAutoScalingEnabled"/> bindable property.</summary>
+    public static readonly BindableProperty ItemFontAutoScalingEnabledProperty = BindableProperty.Create(
+           propertyName: nameof(ItemFontAutoScalingEnabled),
+           returnType: typeof(bool),
+           declaringType: typeof(WheelPicker),
+           defaultValue: true,
+           propertyChanged: OnItemMetricsChanged);
 
     /// <summary>Identifies the <see cref="SelectedIndex"/> bindable property.</summary>
     public static readonly BindableProperty SelectedIndexProperty = BindableProperty.Create(
@@ -182,12 +265,17 @@ public partial class WheelPicker
            defaultValue: false,
            defaultBindingMode: BindingMode.OneWayToSource);
 
-    /// <summary>Identifies the <see cref="ItemHeight"/> bindable property.</summary>
-    public static readonly BindableProperty ItemHeightProperty = BindableProperty.Create(
+    private static readonly BindablePropertyKey ItemHeightPropertyKey = BindableProperty.CreateReadOnly(
            propertyName: nameof(ItemHeight),
            returnType: typeof(double),
            declaringType: typeof(WheelPicker),
            defaultValue: 0d);
+
+    /// <summary>Identifies the <see cref="ItemHeight"/> bindable property (read-only).</summary>
+    /// <remarks>
+    /// ItemHeight is derived from the realized item template. It cannot be set from XAML or code outside of WheelPicker.
+    /// </remarks>
+    public static readonly BindableProperty ItemHeightProperty = ItemHeightPropertyKey.BindableProperty;
 
     private static readonly BindableProperty PreviousVisualStateProperty = BindableProperty.CreateAttached(
             propertyName: "PreviousVisualState",
@@ -207,6 +295,101 @@ public partial class WheelPicker
     {
         get => (DataTemplate?)GetValue(ItemTemplateProperty);
         set => SetValue(ItemTemplateProperty, value);
+    }
+
+    /// <summary>Gets or sets the string format used by the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    public string? ItemStringFormat
+    {
+        get => (string?)GetValue(ItemStringFormatProperty);
+        set => SetValue(ItemStringFormatProperty, value);
+    }
+
+    /// <summary>Gets or sets the text color used by the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    public Color ItemTextColor
+    {
+        get => (Color)GetValue(ItemTextColorProperty);
+        set => SetValue(ItemTextColorProperty, value);
+    }
+
+    /// <summary>Gets or sets the font size used by the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    /// <value>Default is <c>14</c>.</value>
+    public double ItemFontSize
+    {
+        get => (double)GetValue(ItemFontSizeProperty);
+        set => SetValue(ItemFontSizeProperty, value);
+    }
+
+    /// <summary>Gets or sets the font attributes used by the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    /// <value>Default is <see cref="FontAttributes.None"/>.</value>
+    public FontAttributes ItemFontAttributes
+    {
+        get => (FontAttributes)GetValue(ItemFontAttributesProperty);
+        set => SetValue(ItemFontAttributesProperty, value);
+    }
+
+    /// <summary>Gets or sets the font family used by the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    public string ItemFontFamily
+    {
+        get => (string)GetValue(ItemFontFamilyProperty);
+        set => SetValue(ItemFontFamilyProperty, value);
+    }
+
+    /// <summary>Gets or sets the padding used by the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    public Thickness ItemPadding
+    {
+        get => (Thickness)GetValue(ItemPaddingProperty);
+        set => SetValue(ItemPaddingProperty, value);
+    }
+
+    /// <summary>Gets or sets the horizontal text alignment of the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    /// <value>Default is <see cref="TextAlignment.Center"/>.</value>
+    public TextAlignment ItemHorizontalTextAlignment
+    {
+        get => (TextAlignment)GetValue(ItemHorizontalTextAlignmentProperty);
+        set => SetValue(ItemHorizontalTextAlignmentProperty, value);
+    }
+
+    /// <summary>Gets or sets the vertical text alignment of the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    /// <value>Default is <see cref="TextAlignment.Center"/>.</value>
+    public TextAlignment ItemVerticalTextAlignment
+    {
+        get => (TextAlignment)GetValue(ItemVerticalTextAlignmentProperty);
+        set => SetValue(ItemVerticalTextAlignmentProperty, value);
+    }
+
+    /// <summary>Gets or sets the line break mode of the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    /// <value>Default is <see cref="LineBreakMode.NoWrap"/>.</value>
+    public LineBreakMode ItemLineBreakMode
+    {
+        get => (LineBreakMode)GetValue(ItemLineBreakModeProperty);
+        set => SetValue(ItemLineBreakModeProperty, value);
+    }
+
+    /// <summary>Gets or sets the max lines of the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    /// <value>Default is <c>1</c>.</value>
+    public int ItemMaxLines
+    {
+        get => (int)GetValue(ItemMaxLinesProperty);
+        set => SetValue(ItemMaxLinesProperty, value);
+    }
+
+    /// <summary>Gets or sets whether font auto-scaling is enabled for the default item template.</summary>
+    /// <remarks>This property is ignored when a custom <see cref="ItemTemplate"/> is provided.</remarks>
+    /// <value>Default is <see langword="true"/>.</value>
+    public bool ItemFontAutoScalingEnabled
+    {
+        get => (bool)GetValue(ItemFontAutoScalingEnabledProperty);
+        set => SetValue(ItemFontAutoScalingEnabledProperty, value);
     }
 
     /// <summary>Gets or sets the index of the currently selected item within <see cref="ItemsSource"/>.</summary>
@@ -450,7 +633,7 @@ public partial class WheelPicker
     public double ItemHeight
     {
         get => (double)GetValue(ItemHeightProperty);
-        private set => SetValue(ItemHeightProperty, value);
+        private set => SetValue(ItemHeightPropertyKey, value);
     }
 
     private static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
@@ -462,8 +645,18 @@ public partial class WheelPicker
     private static void OnItemTemplateChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var control = (WheelPicker)bindable;
-        control.ItemHeight = 0;
-        control.RebuildItems();
+        control.OnItemTemplateChangedInternal();
+    }
+
+    private static object CoerceItemStringFormat(BindableObject bindable, object value)
+    {
+        return StringHelper.NormalizeStringFormat(value as string) ?? string.Empty;
+    }
+
+    private static void OnItemMetricsChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        var control = (WheelPicker)bindable;
+        control.OnItemMetricsChangedInternal();
     }
 
     private static object CoerceSelectedIndex(BindableObject bindable, object value)

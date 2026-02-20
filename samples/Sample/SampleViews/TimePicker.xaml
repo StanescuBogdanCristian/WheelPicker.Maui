@@ -11,19 +11,12 @@
 
     <wp:WheelPicker x:Name="hourPicker"
                     InertiaMinVelocity="{Binding Source={x:Reference hourPicker}, Path=ItemHeight}"
-                    Grid.Column="0"
                     VisibleItemsCount="9"
                     EdgeItemTiltAngle="90"
-                    EdgeItemOpacity=".5">
-        <wp:WheelPicker.ItemTemplate>
-            <DataTemplate>
-                <Label Text="{Binding .}"
-                       VerticalTextAlignment="Center"
-                       HorizontalTextAlignment="Center"
-                       FontSize="35"
-                       FontFamily="RobotoRegular" />
-            </DataTemplate>
-        </wp:WheelPicker.ItemTemplate>
+                    EdgeItemOpacity=".5"
+                    ItemFontSize="35"
+                    ItemFontFamily="RobotoRegular"
+                    Grid.Column="0">
         <wp:WheelPicker.Overlay>
             <Grid>
                 <Grid.RowDefinitions>
@@ -56,19 +49,12 @@
 
     <wp:WheelPicker x:Name="minutePicker"
                     InertiaMinVelocity="{Binding Source={x:Reference minutePicker}, Path=ItemHeight}"
-                    Grid.Column="1"
                     VisibleItemsCount="9"
                     EdgeItemTiltAngle="90"
-                    EdgeItemOpacity=".5">
-        <wp:WheelPicker.ItemTemplate>
-            <DataTemplate>
-                <Label Text="{Binding .}"
-                       VerticalTextAlignment="Center"
-                       HorizontalTextAlignment="Center"
-                       FontSize="35"
-                       FontFamily="RobotoRegular" />
-            </DataTemplate>
-        </wp:WheelPicker.ItemTemplate>
+                    EdgeItemOpacity=".5"
+                    ItemFontSize="35"
+                    ItemFontFamily="RobotoRegular"
+                    Grid.Column="1">
         <wp:WheelPicker.Overlay>
             <Grid>
                 <Grid.RowDefinitions>
@@ -101,19 +87,12 @@
 
     <wp:WheelPicker x:Name="periodPicker"
                     InertiaMinVelocity="{Binding Source={x:Reference periodPicker}, Path=ItemHeight}"
-                    Grid.Column="2"
                     VisibleItemsCount="3"
                     CurvatureFactor="0"
-                    Loop="False">
-        <wp:WheelPicker.ItemTemplate>
-            <DataTemplate>
-                <Label Text="{Binding .}"
-                       VerticalTextAlignment="Center"
-                       HorizontalTextAlignment="Center"
-                       FontSize="35"
-                       FontFamily="RobotoRegular" />
-            </DataTemplate>
-        </wp:WheelPicker.ItemTemplate>
+                    Loop="False"
+                    ItemFontSize="35"
+                    ItemFontFamily="RobotoRegular"
+                    Grid.Column="2">
         <wp:WheelPicker.Overlay>
             <Grid>
                 <Grid.RowDefinitions>

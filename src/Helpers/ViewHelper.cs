@@ -36,20 +36,15 @@ internal static class ViewHelper
             view.TranslationY = value;
     }
 
+    /// <summary>
+    /// This method is used because <see cref="WheelPicker.CalculateVisibleHeight"/> has a different
+    /// calculation method for windows. Also developer can set <see cref="Layout.IsClippedToBounds"/>
+    /// </summary>
+    /// <param name="view"></param>
+    /// <param name="hidden"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void HideOrShow(this View view, bool hidden)
     {
-#if !WINDOWS
-        return;
-#endif
-        if (hidden)
-        {
-            view.Clip ??= new RectangleGeometry { Rect = Rect.Zero };
-        }
-        else
-        {
-            if (view.Clip != null)
-                view.Clip = null;
-        }
+        view.SetScale(hidden ? 0 : view.Scale);
     }
 }

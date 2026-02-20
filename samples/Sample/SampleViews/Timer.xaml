@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Grid xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+      xmlns:wp="http://schemas.sbc.com/maui/wheelpicker"
+      x:Class="Sample.SampleViews.Timer"
+      ColumnDefinitions="*,auto,*,auto,*"
+      RowDefinitions="auto,*,auto"
+      ColumnSpacing="10"
+      RowSpacing="10"
+      HorizontalOptions="Center">
+
+    <Label Text="Hours"
+           VerticalTextAlignment="Center"
+           HorizontalTextAlignment="Center"
+           Margin="3,0"
+           Grid.Row="0"
+           Grid.Column="0" />
+
+    <wp:WheelPicker x:Name="hourPicker"
+                    CurvatureFactor="0"
+                    Grid.Row="1"
+                    Grid.Column="0">
+        <wp:WheelPicker.ItemTemplate>
+            <DataTemplate>
+                <Label Text="{Binding ., StringFormat='{0:D2}'}"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       FontSize="35"
+                       FontFamily="RobotoRegular">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding Source={x:Reference hourPicker}, Path=IsSpinning}"
+                                     Value="True">
+                            <Setter Property="TextColor"
+                                    Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </DataTemplate>
+        </wp:WheelPicker.ItemTemplate>
+        <wp:WheelPicker.Overlay>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="{Binding Source={x:Reference hourPicker}, Path=ItemHeight}" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                         BackgroundColor="{OnPlatform Android=Transparent,Default={AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}}"
+                         Opacity="0.8"
+                         Grid.Row="0" />
+
+                <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                         BackgroundColor="{OnPlatform Android=Transparent,Default={AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}}"
+                         Opacity="0.8"
+                         Grid.Row="2" />
+            </Grid>
+        </wp:WheelPicker.Overlay>
+    </wp:WheelPicker>
+
+    <Label Text=":"
+           VerticalTextAlignment="Center"
+           HorizontalTextAlignment="Center"
+           FontSize="35"
+           Grid.Row="1"
+           Grid.Column="1" />
+
+    <Label Text="Minutes"
+           VerticalTextAlignment="Center"
+           HorizontalTextAlignment="Center"
+           Grid.Row="0"
+           Grid.Column="2" />
+
+    <wp:WheelPicker x:Name="minutePicker"
+                    CurvatureFactor="0"
+                    Grid.Row="1"
+                    Grid.Column="2">
+        <wp:WheelPicker.ItemTemplate>
+            <DataTemplate>
+                <Label Text="{Binding ., StringFormat='{0:D2}'}"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       FontSize="35"
+                       FontFamily="RobotoRegular">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding Source={x:Reference minutePicker}, Path=IsSpinning}"
+                                     Value="True">
+                            <Setter Property="TextColor"
+                                    Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </DataTemplate>
+        </wp:WheelPicker.ItemTemplate>
+        <wp:WheelPicker.Overlay>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="{Binding Source={x:Reference minutePicker}, Path=ItemHeight}" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                         BackgroundColor="{OnPlatform Android=Transparent,Default={AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}}"
+                         Opacity="0.8"
+                         Grid.Row="0" />
+
+                <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                         BackgroundColor="{OnPlatform Android=Transparent,Default={AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}}"
+                         Opacity="0.8"
+                         Grid.Row="2" />
+            </Grid>
+        </wp:WheelPicker.Overlay>
+    </wp:WheelPicker>
+
+    <Label Text=":"
+           VerticalTextAlignment="Center"
+           HorizontalTextAlignment="Center"
+           FontSize="35"
+           Grid.Row="1"
+           Grid.Column="3" />
+
+    <Label Text="Seconds"
+           VerticalTextAlignment="Center"
+           HorizontalTextAlignment="Center"
+           Grid.Row="0"
+           Grid.Column="4" />
+
+    <wp:WheelPicker x:Name="secondPicker"
+                    CurvatureFactor="0"
+                    Grid.Row="1"
+                    Grid.Column="4">
+        <wp:WheelPicker.ItemTemplate>
+            <DataTemplate>
+                <Label Text="{Binding ., StringFormat='{0:D2}'}"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       FontSize="35"
+                       FontFamily="RobotoRegular">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding Source={x:Reference secondPicker}, Path=IsSpinning}"
+                                     Value="True">
+                            <Setter Property="TextColor"
+                                    Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </DataTemplate>
+        </wp:WheelPicker.ItemTemplate>
+        <wp:WheelPicker.Overlay>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="{Binding Source={x:Reference secondPicker}, Path=ItemHeight}" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                         BackgroundColor="{OnPlatform Android=Transparent,Default={AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}}"
+                         Opacity="0.8"
+                         Grid.Row="0" />
+
+                <BoxView Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}"
+                         BackgroundColor="{OnPlatform Android=Transparent,Default={AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray950}}}"
+                         Opacity="0.8"
+                         Grid.Row="2" />
+            </Grid>
+        </wp:WheelPicker.Overlay>
+    </wp:WheelPicker>
+
+    <Grid ColumnDefinitions="*,*,*"
+          ColumnSpacing="12"
+          HorizontalOptions="Center"
+          Grid.ColumnSpan="5"
+          Grid.Row="2">
+
+        <Button x:Name="startButton"
+                Text="Start"
+                Clicked="OnStart"
+                Grid.Column="0" />
+
+        <Button x:Name="pauseButton"
+                Text="Pause"
+                Clicked="OnPaused"
+                Grid.Column="1" />
+
+        <Button x:Name="resetButton"
+                Text="Reset"
+                Clicked="OnReset"
+                Grid.Column="2" />
+
+    </Grid>
+</Grid>
