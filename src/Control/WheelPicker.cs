@@ -159,7 +159,7 @@ public partial class WheelPicker : Container, IDisposable
 
     #endregion
 
-    private static readonly IMultiValueConverter ItemStringFormatConverter = new ItemStringFormatMultiConverter();
+    private static readonly IMultiValueConverter ItemStringFormatConverter = new ItemStringFormatConverter();
 
     private static readonly RelativeBindingSource WheelPickerAncestor =
         new(RelativeBindingSourceMode.FindAncestor, typeof(WheelPicker), 1);
@@ -195,9 +195,6 @@ public partial class WheelPicker : Container, IDisposable
 
         base.AllowedDirections = AllowedPanDirections.Vertical;
         base.DeferToChildGestures = false;
-        FlingVelocityThreshold = 220;
-        InertiaMinVelocity = 30;
-        InertiaDeceleration = 1800;
 
         Children.Add(_itemsHost);
         Clip = _clipGeometry;
@@ -1944,6 +1941,9 @@ public partial class WheelPicker : Container, IDisposable
     private void ApplyFeedbacks(bool isSnap = false)
     {
         if (_isFirstAppearance)
+            return;
+
+        if (!HapticFeedback && !SoundFeedback)
             return;
 
         double intensity = isSnap

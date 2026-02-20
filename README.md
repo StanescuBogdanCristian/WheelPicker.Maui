@@ -8,13 +8,15 @@
 
 ## Features
 
-- **ItemTemplate**
+- **ItemTemplate** (custom content)
+- **Default item styling** (text color, font, padding, alignment, line break, max lines, auto-scaling)
+- **ItemStringFormat** for default template formatting
 - **Loop** mode (infinite wheel)
 - **Selection threshold band** (controls how “strict” the center selection is)
 - **Visual states** for selected/non-selected items (`CurrentItem` / `DefaultItem`)
 - **Curvature / 3D wheel effect** with configurable `tilt`, `scale`, `opacity`
 - **Overlay view** (selection band, highlight, etc.)
-- **Haptic and sound** feedbacks on selection change
+- **Velocity-adaptive haptic and sound feedback** (tick + snap)
 - **Mouse wheel** support for macOS and Windows
 - **Parent ScrollView** support (disables parent scrolling when interacting with the wheel)
 - Exposes `IsDragging`, `IsSpinning`, and computed `ItemHeight`
@@ -23,7 +25,7 @@
 
 ## Requirements
 
-- .NET 10+
+- .NET 9+
 
 ---
 
@@ -40,7 +42,9 @@ dotnet add package S8C.WheelPicker.Maui
 Add the namespace:
 
 ```xml
-xmlns:wp="clr-namespace:WheelPicker.Maui;assembly=SBC.WheelPicker.Maui"
+xmlns:wp="clr-namespace:SBC.WheelPicker;assembly=SBC.WheelPicker.Maui"
+or
+xmlns:wp="http://schemas.sbc.com/maui/wheelpicker"
 ```
 
 Use the control:
@@ -163,16 +167,16 @@ wheelPicker.SpinTo(item);
 
 | Property | Type | Default | Description |
 |---|---:|---:|---|
-| `SelectedIndex` | int | -1 | Index of the currently selected item within `ItemsSource`. This property supports two-way data binding.|
-| `SelectedItem` | object | null | Currently selected item within `ItemsSource`. This property supports two-way data binding.|
+| `SelectedIndex` | int | -1 | Index of the currently selected item within `ItemsSource`. This property supports two-way data binding. |
+| `SelectedItem` | object | null | Currently selected item within `ItemsSource`. This property supports two-way data binding. |
 | `IsSelectionAnimated` | bool | true | A value indicating whether selection changes are animated when the selected item changes. |
-| `SelectionThreshold` | double | 0.4 | The relative size of the selection band around the vertical center of the wheel, used when determining which item is considered selected. Valid range: 0.0 – 1.0. |
+| `SelectionThreshold` | double | 0.4 | Relative size of the selection band around the vertical center of the wheel. Valid range: 0.1 – 0.9. |
 
 ## Feedbacks
 
 | Property | Type | Default | Description |
 |---|---:|---:|---|
-| `HapticFeedback` | bool | true | Haptic feedback (vibration) when selection changes. |
+| `HapticFeedback` | bool | true | Haptic feedback (tick + snap) when selection changes. |
 | `SoundFeedback` | bool | true | Play a tick sound when selection changes. |
 
 ## Interactions
@@ -180,15 +184,57 @@ wheelPicker.SpinTo(item);
 | Property | Type | Default | Description |
 |---|---:|---:|---|
 | `Loop` | bool | true | Whether the wheel loops when the user scrolls past the first or last item. |
-| `IsSwipeEnabled` | bool | true | Enable/disable drag interaction |
+| `IsSwipeEnabled` | bool | true | Enable/disable drag interaction. |
 
 ## Appearance
 
 | Property | Type | Default | Description |
 |---|---:|---:|---|
-| `VisibleItemsCount` | int | 5 | Number of items visible at once in the wheel (typically an odd number so the center item is the selection). Valid range: odd integers from 3 to 11. |
-| `CurvatureFactor` | double | 1.0 | Intensity of the wheel's curvature / 3D bend effect. Lower values make the wheel flatter higher values increase the perceived curve. Valid range: 0.0 – 1.0. |
-| `EdgeItemTiltAngle` | double | 70 | Maximum tilt (rotation) angle, in degrees, applied to items near the edges of the wheel. Valid range: 0.0 – 90.0. |
-| `EdgeItemScale` | double | 0.5 | Minimum scale applied to items near the top and bottom edges of the wheel. Valid range: 0.1 – 1.0. |
-| `EdgeItemOpacity` | double | 0.1 | Minimum opacity applied to items near the top and bottom edges of the wheel. Valid range: 0.1 – 1.0. |
+| `VisibleItemsCount` | int | 5 | Number of items visible at once (odd integers from 1 to 11). |
+| `CurvatureFactor` | double | 1.0 | Intensity of the wheel's curvature / 3D bend effect. Valid range: 0.0 – 1.0. |
+| `EdgeItemTiltAngle` | double | 70 | Maximum tilt (rotation) angle in degrees applied to edge items. Valid range: 0.1 – 90.0. |
+| `EdgeItemScale` | double | 0.5 | Minimum scale applied to edge items. Valid range: 0.1 – 1.0. |
+| `EdgeItemOpacity` | double | 0.1 | Minimum opacity applied to edge items. Valid range: 0.1 – 1.0. |
+
+## Default item template
+
+These properties apply to the default item template only (ignored when `ItemTemplate` is set).
+
+| Property | Type | Default | Description |
+|---|---:|---:|---|
+| `ItemStringFormat` | string | null | String format for the default item template. |
+| `ItemTextColor` | Color | theme | Text color for the default item template. |
+| `ItemFontSize` | double | 14 | Font size for the default item template. |
+| `ItemFontAttributes` | FontAttributes | None | Font attributes for the default item template. |
+| `ItemFontFamily` | string | null | Font family for the default item template. |
+| `ItemPadding` | Thickness | 0 | Padding for the default item template. |
+| `ItemHorizontalTextAlignment` | TextAlignment | Center | Horizontal text alignment. |
+| `ItemVerticalTextAlignment` | TextAlignment | Center | Vertical text alignment. |
+| `ItemLineBreakMode` | LineBreakMode | NoWrap | Line break mode. |
+| `ItemMaxLines` | int | 1 | Maximum lines for the default item template. |
+| `ItemFontAutoScalingEnabled` | bool | true | Enables font auto-scaling. |
+
+## Read-only state
+
+| Property | Type | Description |
+|---|---:|---|
+| `IsDragging` | bool | True while user is dragging (OneWayToSource). |
+| `IsSpinning` | bool | True while inertia/animation is active (OneWayToSource). |
+| `ItemHeight` | double | Computed item height (read-only). |
+
+## Events
+
+| Event | Description |
+|---|---|
+| `SelectedIndexChanged` | Fires when `SelectedIndex` changes. |
+| `SelectedItemChanged` | Fires when `SelectedItem` changes. |
+
+## Commands
+
+| Property | Type | Description |
+|---|---|---|
+| `SelectedIndexChangedCommand` | ICommand | Invoked when `SelectedIndex` changes. |
+| `SelectedIndexChangedCommandParameter` | object | Optional parameter for `SelectedIndexChangedCommand`. |
+| `SelectedItemChangedCommand` | ICommand | Invoked when `SelectedItem` changes. |
+| `SelectedItemChangedCommandParameter` | object | Optional parameter for `SelectedItemChangedCommand`. |
 

@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace SBC.WheelPicker.Converters;
 
-internal class ItemStringFormatMultiConverter : IMultiValueConverter
+internal class ItemStringFormatConverter : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
