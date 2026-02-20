@@ -1,3 +1,5 @@
+using SBC.WheelPicker;
+
 namespace Sample.SampleViews;
 
 public partial class Timer : Grid
@@ -48,7 +50,7 @@ public partial class Timer : Grid
         UpdateWheelsFromRemaining();
     }
 
-    private void OnWheelChanged(object? sender, SBC.WheelPicker.SelectionChangedEventArgs e)
+    private void OnWheelChanged(object? sender, IndexChangedEventArgs e)
     {
         if (!_isRunning)
             UpdateButtons();

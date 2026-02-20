@@ -9,6 +9,8 @@ namespace SBC.WheelPicker;
 
 public partial class WheelPicker
 {
+    private static int _soundRefCount;
+
     private static AVAudioPlayer? _audioPlayer;
     private static bool _initialized;
     private static readonly object _lock = new();
@@ -116,6 +118,8 @@ public partial class WheelPicker
 
     partial void InitializeSoundFeedbackHandling()
     {
+        Interlocked.Increment(ref _soundRefCount);
+
         if (_initialized)
             return;
 
@@ -167,6 +171,8 @@ public partial class WheelPicker
 
     partial void DisposeSoundFeedbackHandling()
     {
+        if (Interlocked.Decrement(ref _soundRefCount) > 0)
+            return;
         try
         {
             lock (_lock)

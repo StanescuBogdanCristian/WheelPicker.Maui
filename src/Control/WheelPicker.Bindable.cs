@@ -22,6 +22,7 @@ public partial class WheelPicker
            defaultValue: default(DataTemplate),
            propertyChanged: OnItemTemplateChanged);
 
+    /// <summary>Identifies the <see cref="ItemStringFormat"/> bindable property.</summary>
     public static readonly BindableProperty ItemStringFormatProperty = BindableProperty.Create(
            propertyName: nameof(ItemStringFormat),
            returnType: typeof(string),
@@ -56,7 +57,8 @@ public partial class WheelPicker
            propertyName: nameof(ItemFontFamily),
            returnType: typeof(string),
            declaringType: typeof(WheelPicker),
-           defaultValue: default(string));
+           defaultValue: default(string),
+           propertyChanged: OnItemMetricsChanged);
 
     /// <summary>Identifies the <see cref="ItemPadding"/> bindable property.</summary>
     public static readonly BindableProperty ItemPaddingProperty = BindableProperty.Create(
@@ -566,7 +568,7 @@ public partial class WheelPicker
     }
 
     /// <summary>Gets or sets the command invoked when <see cref="SelectedIndex"/> changes.</summary>
-    /// <remarks>Receives <see cref="SelectionChangedEventArgs"/> unless <see cref="SelectedIndexChangedCommandParameter"/> is set.</remarks>
+    /// <remarks>Receives <see cref="IndexChangedEventArgs"/> unless <see cref="SelectedIndexChangedCommandParameter"/> is set.</remarks>
     public ICommand? SelectedIndexChangedCommand
     {
         get => (ICommand?)GetValue(SelectedIndexChangedCommandProperty);
@@ -574,7 +576,7 @@ public partial class WheelPicker
     }
 
     /// <summary>Gets or sets an explicit parameter passed to <see cref="SelectedIndexChangedCommand"/>.</summary>
-    /// <remarks>If null, <see cref="SelectionChangedEventArgs"/> is passed instead.</remarks>
+    /// <remarks>If null, <see cref="IndexChangedEventArgs"/> is passed instead.</remarks>
     public object? SelectedIndexChangedCommandParameter
     {
         get => GetValue(SelectedIndexChangedCommandParameterProperty);
@@ -584,7 +586,7 @@ public partial class WheelPicker
     /// <summary>
     /// Gets or sets the command invoked when <see cref="SelectedItem"/> changes.
     /// </summary>
-    /// <remarks>Receives <see cref="SelectionChangedEventArgs"/> unless <see cref="SelectedItemChangedCommandParameter"/> is set.</remarks>
+    /// <remarks>Receives <see cref="ItemChangedEventArgs"/> unless <see cref="SelectedItemChangedCommandParameter"/> is set.</remarks>
     public ICommand? SelectedItemChangedCommand
     {
         get => (ICommand?)GetValue(SelectedItemChangedCommandProperty);
@@ -592,7 +594,7 @@ public partial class WheelPicker
     }
 
     /// <summary>Gets or sets an explicit parameter passed to <see cref="SelectedItemChangedCommand"/>.</summary>
-    /// <remarks>If null, <see cref="SelectionChangedEventArgs"/> is passed instead.</remarks>
+    /// <remarks>If null, <see cref="ItemChangedEventArgs"/> is passed instead.</remarks>
     public object? SelectedItemChangedCommandParameter
     {
         get => GetValue(SelectedItemChangedCommandParameterProperty);

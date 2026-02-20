@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
-using SelectionChangedEventArgs = SBC.WheelPicker.SelectionChangedEventArgs;
 
 namespace Sample.SampleViews;
 
@@ -136,13 +135,13 @@ public partial class DatePicker : Grid
 
     #region Selection Handlers
 
-    private void OnDayChanged(object? sender, SelectionChangedEventArgs e)
+    private void OnDayChanged(object? sender, IndexChangedEventArgs e)
     {
         if (!_suppressSync)
             SyncDateFromPickers();
     }
 
-    private void OnMonthChanged(object? sender, SelectionChangedEventArgs e)
+    private void OnMonthChanged(object? sender, IndexChangedEventArgs e)
     {
         if (_suppressSync) return;
 
@@ -150,7 +149,7 @@ public partial class DatePicker : Grid
         SyncDateFromPickers();
     }
 
-    private void OnYearChanged(object? sender, SelectionChangedEventArgs e)
+    private void OnYearChanged(object? sender, IndexChangedEventArgs e)
     {
         if (_suppressSync) return;
 

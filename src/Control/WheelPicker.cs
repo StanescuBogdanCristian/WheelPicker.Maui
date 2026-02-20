@@ -35,19 +35,19 @@ public partial class WheelPicker : Container, IDisposable
     /// Occurs when <see cref="SelectedIndex"/> changes as a result of user interaction or programmatic update.
     /// </summary>
     /// <remarks>
-    /// The event args carry the previous and current index values as <see cref="SelectionChangedEventArgs.PreviousSelection"/>
-    /// and <see cref="SelectionChangedEventArgs.CurrentSelection"/> (boxed <see langword="int"/>).
+    /// The event args carry the previous and current index values as <see cref="IndexChangedEventArgs.PreviousIndex"/>
+    /// and <see cref="IndexChangedEventArgs.CurrentIndex"/> (boxed <see langword="int"/>).
     /// </remarks>
-    public event EventHandler<SelectionChangedEventArgs>? SelectedIndexChanged;
+    public event EventHandler<IndexChangedEventArgs>? SelectedIndexChanged;
 
     /// <summary>
     /// Occurs when <see cref="SelectedItem"/> changes as a result of user interaction or programmatic update.
     /// </summary>
     /// <remarks>
-    /// The event args carry the previous and current item values as <see cref="SelectionChangedEventArgs.PreviousSelection"/>
-    /// and <see cref="SelectionChangedEventArgs.CurrentSelection"/>.
+    /// The event args carry the previous and current item values as <see cref="ItemChangedEventArgs.PreviousItem"/>
+    /// and <see cref="ItemChangedEventArgs.CurrentItem"/>.
     /// </remarks>
-    public event EventHandler<SelectionChangedEventArgs>? SelectedItemChanged;
+    public event EventHandler<ItemChangedEventArgs>? SelectedItemChanged;
 
     #endregion
 
@@ -149,11 +149,13 @@ public partial class WheelPicker : Container, IDisposable
     private int _lastNotifiedIndex = -1;
     private object? _lastNotifiedItem;
 
+    private IList? _cachedItems;
+    private int _cachedItemsCount;
+
     #region Helpers
 
-    private int ItemsCount => ItemsSource?.Count ?? 0;
-
-    private bool HasItems => ItemsCount > 0;
+    private int ItemsCount => _cachedItemsCount;
+    private bool HasItems => _cachedItemsCount > 0;
 
     #endregion
 
@@ -517,6 +519,38 @@ public partial class WheelPicker : Container, IDisposable
         try { this.AbortAnimation(WheelSpinToAnimationName); } catch { }
     }
 
+    /// <summary>
+    /// Raises the <see cref="SelectedIndexChanged"/> event and executes the <see cref="SelectedIndexChangedCommand"/>, if available.
+    /// </summary>
+    /// <remarks>
+    /// Override this method in a derived class to provide custom handling for index changed events.
+    /// </remarks>
+    /// <param name="e">The event data for <see cref="IndexChangedEventArgs"/>.</param>
+    protected virtual void OnSelectedIndexChanged(IndexChangedEventArgs e)
+    {
+        SelectedIndexChanged?.Invoke(this, e);
+
+        var param = SelectedIndexChangedCommandParameter ?? e;
+        if (SelectedIndexChangedCommand?.CanExecute(param) == true)
+            SelectedIndexChangedCommand?.Execute(param);
+    }
+
+    /// <summary>
+    /// Raises the <see cref="SelectedItemChanged"/> event and executes the <see cref="SelectedItemChangedCommand"/>, if available.
+    /// </summary>
+    /// <remarks>
+    /// Override this method in a derived class to provide custom handling for item changed events.
+    /// </remarks>
+    /// <param name="e">The event data for <see cref="ItemChangedEventArgs"/>.</param>
+    protected virtual void OnSelectedItemChanged(ItemChangedEventArgs e)
+    {
+        SelectedItemChanged?.Invoke(this, e);
+
+        var param = SelectedItemChangedCommandParameter ?? e;
+        if (SelectedItemChangedCommand?.CanExecute(param) == true)
+            SelectedItemChangedCommand?.Execute(param);
+    }
+
     #region IDisposable
 
     /// <summary>Releases resources used by the <see cref="WheelPicker"/>.</summary>
@@ -803,6 +837,12 @@ public partial class WheelPicker : Container, IDisposable
 
         var items = ItemsSource!;
         int count = ItemsCount;
+
+        // Fast path: check SelectedIndex first (most common case)
+        int index = SelectedIndex;
+        if (index >= 0 && index < count && Equals(items[index], value))
+            return index;
+
         for (int i = 0; i < count; i++)
         {
             if (Equals(items[i], value))
@@ -852,23 +892,15 @@ public partial class WheelPicker : Container, IDisposable
 
     private void RaiseSelectedIndexChanged(int oldIndex, int newIndex)
     {
-        var eventArgs = new SelectionChangedEventArgs(oldIndex, newIndex);
-
-        SelectedIndexChanged?.Invoke(this, eventArgs);
-
-        var param = SelectedIndexChangedCommandParameter ?? eventArgs;
-        if (SelectedIndexChangedCommand?.CanExecute(param) == true)
-            SelectedIndexChangedCommand?.Execute(param);
+        var eventArgs = new IndexChangedEventArgs(oldIndex, newIndex);
+        OnSelectedIndexChanged(eventArgs);
     }
 
     private void RaiseSelectedItemChanged(object? oldItem, object? newItem)
     {
-        var eventArgs = new SelectionChangedEventArgs(oldItem, newItem);
-        SelectedItemChanged?.Invoke(this, eventArgs);
+        var eventArgs = new ItemChangedEventArgs(oldItem, newItem);
+        OnSelectedItemChanged(eventArgs);
 
-        var param = SelectedItemChangedCommandParameter ?? eventArgs;
-        if (SelectedItemChangedCommand?.CanExecute(param) == true)
-            SelectedItemChangedCommand?.Execute(param);
     }
 
     /// <summary>
@@ -1045,9 +1077,23 @@ public partial class WheelPicker : Container, IDisposable
 
             if (i == centerIndex)
             {
+                // Probe needs real content — GhostContext produces empty text,
+                // so font-family/format changes don't affect height and
+                // SizeChanged never fires, leaving ItemHeight stuck at 0.
+                if (HasItems)
+                {
+                    int index = SelectedIndex >= 0 && SelectedIndex < ItemsCount ? SelectedIndex : 0;
+                    view.BindingContext = ItemsSource![index];
+                }
+
                 view.SizeChanged += OnItemSizeChanged;
             }
         }
+
+        // Force rebind on next visual update so the probe view
+        // gets its correct BindingContext back after measurement.
+        _lastBaseCenterRawIndex = int.MinValue;
+        _lastItemsCount = -1;
     }
 
     private void OnItemSizeChanged(object? sender, EventArgs e)
@@ -1675,6 +1721,8 @@ public partial class WheelPicker : Container, IDisposable
 
     private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        RefreshItemsCache();
+
         _isLoadingItems = true;
         SyncStateFromPublicProps();
         RebuildItems();
@@ -1695,13 +1743,14 @@ public partial class WheelPicker : Container, IDisposable
             _observableSource.CollectionChanged += OnCollectionChanged;
         }
 
-        // Structural rebuild: the items changed, so pooled views are no longer valid.
+        RefreshItemsCache();
+
+        // pooled views are no longer valid.
         CancelAllAnimations();
 
         IsDragging = false;
         IsSpinning = false;
 
-        ItemHeight = 0;
         _viewPool.Clear();
         _itemsHost.Children.Clear();
 
@@ -1709,6 +1758,12 @@ public partial class WheelPicker : Container, IDisposable
         SyncStateFromPublicProps();
         RebuildItems();
         _isLoadingItems = false;
+    }
+
+    private void RefreshItemsCache()
+    {
+        _cachedItems = ItemsSource;
+        _cachedItemsCount = _cachedItems?.Count ?? 0;
     }
 
     #endregion
@@ -1752,6 +1807,7 @@ public partial class WheelPicker : Container, IDisposable
         ItemHeight = 0;
         _viewPool.Clear();
         _itemsHost.Children.Clear();
+        _cachedVisibleHeight = 0;
 
         SyncStateFromPublicProps();
         RebuildItems();
@@ -1768,12 +1824,9 @@ public partial class WheelPicker : Container, IDisposable
             return;
 
         ItemHeight = 0;
+        _cachedVisibleHeight = 0;
 
         RemeasureItemHeight();
-
-        //// Keep the existing virtual index and visuals; layout will snap back once ItemHeight is known.
-        //if (_hasValidSize)
-        //    UpdateVisualFromVirtualIndex();
     }
 
     private void OnSelectedIndexChangedInternal(int newIndex)

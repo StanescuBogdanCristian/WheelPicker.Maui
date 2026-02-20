@@ -1,5 +1,5 @@
+using SBC.WheelPicker;
 using System.Collections.ObjectModel;
-using SelectionChangedEventArgs = SBC.WheelPicker.SelectionChangedEventArgs;
 
 namespace Sample.SampleViews;
 
@@ -78,7 +78,7 @@ public partial class TimePicker : Grid
 
     #region Selection Handler
 
-    private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void OnSelectionChanged(object? sender, IndexChangedEventArgs e)
     {
         if (!_suppressSync)
             SyncTimeFromPickers();

@@ -7,6 +7,8 @@ namespace SBC.WheelPicker;
 
 public partial class WheelPicker
 {
+    private static int _soundRefCount;
+
     private UIElement? _platformView;
     private static MediaPlayer? _mediaPlayer;
     private static Stream? _audioStream;
@@ -65,6 +67,8 @@ public partial class WheelPicker
 
     partial void InitializeSoundFeedbackHandling()
     {
+        Interlocked.Increment(ref _soundRefCount);
+
         if (_initialized || _initStarted)
             return;
 
@@ -113,6 +117,8 @@ public partial class WheelPicker
 
     partial void DisposeSoundFeedbackHandling()
     {
+        if (Interlocked.Decrement(ref _soundRefCount) > 0)
+            return;
         try
         {
             lock (_lock)
